@@ -1,6 +1,6 @@
 # Android_QA
 
-## Java 部分
+## Java 部分（一）基础知识点
 
 ### 1. Java中 == 和 equals 和 hashCode 的区别
 
@@ -227,4 +227,242 @@ Parcelable 是Android的序列化方式，主要用于在内存序列化上，�
 
 ### 19. 静态内部类的设计意图
 
-​
+只是为了降低包的深度，方便类的使用，静态内部类适用于包含类当中，但又不依赖于外在的类，不用使用外在类的非静态属性和方法，只是为了方便管理类结构而定义。在创建静态内部类的时候，不需要外部类对象的引用。
+
+非静态内部类有一个很大的优点：可以自由使用外部类中的变量和方法。
+
+```java
+static class Outer {
+	class Inner {}
+	static class StaticInner {}
+}
+
+Outer outer = new Outer();
+Outer.Inner inner = outer.new Inner();
+Outer.StaticInner inner0 = new Outer.StaticInner();
+```
+
+参考自：[https://www.zhihu.com/question/28197253](https://www.zhihu.com/question/28197253)
+
+
+
+### 20. 成员内部类、静态内部类、方法内部类（局部内部类）和匿名内部类的理解，以及项目中的应用
+
+成员内部类：
+
+​	最普通的内部类，它的定义位于一个类的内部，这样看起来，成员内部类相当于外部类的一个成员，成员内部类可以无条件访问外部类的所有成员属性和成员方法（包括private成员和静态成员）。不过需要注意的是，当成员内部类拥有和外部类同名的成员变量或者方法时，会发生隐藏现象，即默认情况下访问的是成员内部类的成员。如果要访问外部类的同名成员，形式如下：
+
+```java
+外部类.this.成员变量
+外部类.this.成员方法
+```
+
+虽然成员内部类可以无条件的访问外部类的成员，而外部类想访问成员内部类的成员却不是那么随心所欲了。成员内部类是依附外部类而存在的，也就是说，如果要创建成员内部类的对象，前提必须存在一个外部类对象。创建成员内部类对象的一般方式如下：
+
+```java
+public class Test {
+    public static void main(String[] args)  {
+        //第一种方式：
+        Outter outter = new Outter();
+        Outter.Inner inner = outter.new Inner();  //必须通过Outter对象来创建
+         
+        //第二种方式：
+        Outter.Inner inner1 = outter.getInnerInstance();
+    }
+}
+ 
+class Outter {
+    private Inner inner = null;
+    public Outter() {
+         
+    }
+     
+    public Inner getInnerInstance() {
+        if(inner == null)
+            inner = new Inner();
+        return inner;
+    }
+      
+    class Inner {
+        public Inner() {
+             
+        }
+    }
+}
+```
+
+内部类可以拥有private、protected、public以及包访问权限。如果成员内部类用private修饰，则只能在外部类的内部访问，如果用public修饰，则任何地方都能访问，如果用protected修饰，则只能在同一个包下或者继承外部类的情况下访问，如果是默认访问权限，则只能是同一个包下访问。这一点和外部类有一点不一样，外部类只能被public和包访问两种权限修饰。由于成员内部类看起来像外部类的一个成员，所以可以像类的成员一样拥有多种修饰权限。
+
+静态内部类：
+
+​	静态内部类也是定义在另一个类里面的类，只不过在类的前面多了一个关键字static。静态内部类是不需要依赖外部类的，这点和类的静态成员属性有点相似，并且它不能使用外部类的非static成员变量或者方法。这点很好理解，因为在没有外部类的对象的情况下，可以创建静态内部类的对象，如果允许访问外部类的非static成员就会产生矛盾，因为外部类的非static成员必须依赖于具体的对象。
+
+局部内部类：
+
+​	局部内部类是定义在一个方法或者一个作用域里面的的类，它和成员内部类的区别在于局部内部类的访问权限仅限于方法内或者该作用域内。注意，局部内部类就像是方法里面的一个局部变量一样，是不能有public、protected、private以及static修饰符的。
+
+匿名内部类：
+
+​	匿名内部类不能有访问修饰符和static修饰符的，一般用于编写监听代码。匿名内部类是唯一一个没有构造器的类。正因为没有构造器，所以匿名内部类的适用范围非常有限，大部分匿名内部类用于接口回调。一般来说，匿名内部类用于继承其他类或者实现接口，并不需要增加额外的方法，只是对继承方法的实现或者是重写。
+
+应用场景：
+
+1. 最重要的一点，每个内部类都能独立的继承一个接口的实现，无论外部类是否已经继承了某个接口的实现，对于内部类都没有影响。内部类使得多继承的解决方案变得完整。
+
+ 	2. 方便将存在一定逻辑关系的类组织在一起，又可以对外界隐蔽。
+ 	3. 方便编写事件驱动程序
+ 	4. 方便编写线程代码
+
+总结：
+
+​	对于成员内部类，必须先产生外部类的实例化对象，才能产生内部类的实例化对象。而非静态内部类不用产生外部类的实例化对象即可产生内部类的实例化对象。
+
+```java
+创建静态内部类对象的一般形式：
+外部类类名.内部类类名 xxx = new 外部类类名.内部类类名()
+创建成员内部类对象的一般形式：
+外部类类名.内部类类名 xxx = new 外部类对象名.new 内部类类名()
+```
+
+参考自：[http://www.cnblogs.com/latter/p/5665015.html](http://www.cnblogs.com/latter/p/5665015.html)
+
+
+
+### 21. 谈谈对kotlin的理解
+
+挖个坑，以后自己填！哼哼（傲娇脸
+
+
+
+### 22. 闭包和局部内部类的区别
+
+
+
+### 23. String转换成Integer的方式以及原理
+
+String转int：
+
+```java
+int i = Integer.parseInt(s);
+int i = Integer.valueOf(s).intValue();
+```
+
+int转String：
+
+```java
+String s = i + "";
+String s = Integer.toString(i);
+String s = String.valueOf(i);
+```
+
+源码：
+
+```java
+public static int parseInt(String s, int radix)  throws NumberFormatException  
+    {  
+        /* 
+         * WARNING: This method may be invoked early during VM initialization 
+         * before IntegerCache is initialized. Care must be taken to not use 
+         * the valueOf method. 
+         */  
+    // 下面三个判断好理解，其中表示进制的 radix 要在（2~36）范围内  
+        if (s == null) {  
+            throw new NumberFormatException("null");  
+        }  
+  
+        if (radix < Character.MIN_RADIX) {  
+            throw new NumberFormatException("radix " + radix +  
+                                            " less than Character.MIN_RADIX");  
+        }  
+  
+        if (radix > Character.MAX_RADIX) {  
+            throw new NumberFormatException("radix " + radix +  
+                                            " greater than Character.MAX_RADIX");  
+        }  
+  
+        int result = 0; // 表示结果， 在下面的计算中会一直是个负数，   
+            // 假如说 我们的字符串是一个正数  "7" ，   
+            // 那么在返回这个值之前result保存的是 -7，  
+            // 这个可能是为了保持正数和负数在下面计算的一致性  
+        boolean negative = false;  
+        int i = 0, len = s.length();  
+  
+  
+    //limit 默认初始化为 最大正整数的  负数 ，假如字符串表示的是正数，  
+    //那么result(在返回之前一直是负数形式)就必须和这个最大正数的负数来比较，判断是否溢出  
+  
+        int limit = -Integer.MAX_VALUE;   
+              
+        int multmin;  
+        int digit;  
+  
+        if (len > 0) {     // 首先是对第一个位置判断，是否含有正负号  
+            char firstChar = s.charAt(0);  
+            if (firstChar < '0') { // Possible leading "+" or "-"  
+                if (firstChar == '-') {  
+                    negative = true;  
+              
+            // 这里，在负号的情况下，判断溢出的值就变成了 整数的 最小负数了。  
+                    limit = Integer.MIN_VALUE;  
+  
+                } else if (firstChar != '+')  
+                    throw NumberFormatException.forInputString(s);  
+  
+                if (len == 1) // Cannot have lone "+" or "-"  
+                    throw NumberFormatException.forInputString(s);  
+                i++;  
+            }  
+  
+            multmin = limit / radix;  
+        // 这个是用来判断当前的 result 在接受下一个字符串位置的数字后会不会溢出。  
+        //  原理很简单，为了方便，拿正数来说  
+        //  （multmin result 在计算中都是负数），假如是10  
+        // 进制,假设最大的10进制数是 21，那么multmin = 21/10 = 2,   
+        //  如果我此时的 result 是 3 ，下一个字符c来了，result即将变成  
+        // result = result * 10 + c;那么这个值是肯定大于 21 ，即溢出了，  
+            //  这个溢出的值在 int里面是保存不了的，不可能先计算出  
+        // result（此时的result已经不是溢出的那个值了） 后再去与最大值比较。    
+        // 所以要通过先比较  result < multmin   （说明result * radix 后还比 limit 小）     
+  
+            while (i < len) {  
+                // Accumulating negatively avoids surprises near MAX_VALUE  
+                digit = Character.digit(s.charAt(i++),radix);  
+                if (digit < 0) {  
+                    throw NumberFormatException.forInputString(s);  
+                }  
+  
+  
+        // 这里就是上说的判断溢出，由于result统一用负值来计算，所以用了 小于 号  
+        // 从正数的角度看就是   reslut > mulmin  下一步reslut * radix 肯定是 溢出了  
+                if (result < multmin) {   
+                    throw NumberFormatException.forInputString(s);  
+                }  
+  
+  
+  
+                result *= radix;  
+  
+        // 这里也是判断溢出， 由于是负值来判断，相当于 （-result + digit）> - limit  
+        // 但是不能用这种形式，如果这样去比较，那么得出的值是肯定判断不出溢出的。  
+        // 所以用    result < limit + digit    很巧妙  
+                if (result < limit + digit) {  
+  
+                    throw NumberFormatException.forInputString(s);  
+                }  
+                result -= digit; // 加上这个 digit 的值 （这里减就相当于加）  
+            }  
+        } else {  
+            throw NumberFormatException.forInputString(s);  
+        }  
+        return negative ? result : -result; // 正数就返回  -result   
+    } 
+```
+
+参考自：[http://blog.csdn.net/stu_wanghui/article/details/38564177](http://blog.csdn.net/stu_wanghui/article/details/38564177)
+
+
+
+## Java 部分（二）高级知识点
+
+### 1. 哪些情况下的对象会被垃圾回收机制处理掉？
+
