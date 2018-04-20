@@ -311,9 +311,9 @@ class Outter {
 
 1. 最重要的一点，每个内部类都能独立的继承一个接口的实现，无论外部类是否已经继承了某个接口的实现，对于内部类都没有影响。内部类使得多继承的解决方案变得完整。
 
-		2. 方便将存在一定逻辑关系的类组织在一起，又可以对外界隐蔽。
-		3. 方便编写事件驱动程序
-		4. 方便编写线程代码
+    2. 方便将存在一定逻辑关系的类组织在一起，又可以对外界隐蔽。
+       3. 方便编写事件驱动程序
+       4. 方便编写线程代码
 
 总结：
 
@@ -808,6 +808,123 @@ String被广泛的使用在其他类中充当参数，如果字符串可变，�
 
 ### 2. 四大组件的生命周期和简单用法
 
-**Activity：**
+### **Activity：**
 
-​	
+典型的生命周期好像没什么可说的，主要说一下特殊情况下的生命周期。
+
+1. 横竖屏的切换
+
+   在横竖屏切换的过程中，会发生Activity被销毁并被重建的过程。
+
+   在了解这种情况下的生命周期，首先应该了解这两个回调：onSaveInstance State 和 onRestoreInstance State。
+
+   在Activity由于异常情况下终止时，系统会调用 onSaveInstanceState 来保存当前 Activity 的状态。这个方法的调用是在onStop之前，它和onPause没有既定的时序关系，该方法只有在Activity被异常终止的情况下调用。当异常终止的Activity被重建之后，系统会调用onRestoreInstanceState，并且把Activity销毁时onSaveInstanceState方法所保存的Bundle对象参数同时传递给onRestoreInstanceState和onCreate方法。因为，可以通过onRestoreInstanceState方法来恢复Activity的状态，该方法的调用时机是在onStart之后。其中，onCreate和onRestoreInstanceState方法来恢复Activity状态的区别：onRestoreInstanceState回调则表明其中Bundle对象非空，不用加非空判断，而onCreate需要非空判断，建议使用onRestoreInstanceState。
+
+![](http://upload-images.jianshu.io/upload_images/3985563-23d90471fa7f12d2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+​	横竖屏切换的生命周期：onPause() --> onSaveInstanceState() --> onStop() --> onDestory() --> onCreate() --> onStart() --> onRestoreInstanceState() --> onResume() 
+
+​	可以通过在AndroidManifest文件的Activity中指定如下属性：
+
+​	android:configChanges = "orientation| screenSize"
+
+​	来避免横竖屏切换时，Activity的销毁和重建，而是回调了下面的方法：
+
+```java
+	@Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+    }
+```
+
+2. 资源内存不足导致优先级低的Activity被杀死
+
+   优先级：前台Activity > 可见但非前台Activity > 后台Activity
+
+**启动模式：**
+
+Android 提供了四种Activity启动方式：
+
+标准模式：standard
+
+栈顶复用模式：singleTop
+
+栈内复用模式：singleTask
+
+单例模式：singleInstance
+
+1. 标准模式 standard
+
+   每启动一次Activity，就会创建一个新的Activity实例并置于栈顶。谁启动了这个Activity，那么这个Activity就运行在启动它的那个Activity所在的栈中。
+
+   特殊情况下，如果在Service或Application中启动一个Activity，其并没有所谓的任务栈，可以使用标记位Flag来解决。解决办法：为待启动的Activity指定FLAG_ACTIVITY_NEW_TASK标记位，创建一个新栈。
+
+2. 栈顶复用模式 singleTop
+
+   如果需要新建的Activity位于任务栈栈顶，那么此Activity的实例就不会重建，而是复用栈顶的实例。并回调：
+
+   ```java
+       @Override
+       protected void onNewIntent(Intent intent) {
+           super.onNewIntent(intent);
+       }
+   ```
+
+   由于不会重建一个Activity实例，则不会回调其他生命周期方法。
+
+   应用场景：在通知栏点击收到的通知，然后需要启动一个Activity，这个Activity就可以用singleTop，否则每次点击都会新建一个Activity。
+
+3. 栈内复用模式 singleTask
+
+   该模式是一种单例模式，即一个栈内只有一个该Activity实例。该模式，可以通过在AndroidManifest文件的Activity中指定该Activity需要加载到哪个栈中，即singleTask的Activity可以指定想要加载的目标栈。singleTask和taskAffinity配合使用，指定开启的Activity加入到哪个栈中。
+
+   ```xml
+   <activity android:name=".Activity1"
+       android:launchMode="singleTask"
+       android:taskAffinity="com.lvr.task"
+       android:label="@string/app_name">
+   </activity>
+   ```
+
+   关于taskAffinity的值：每个Activity都有taskAffinify属性，这个属性指出了它希望进入的Task。如果一个Activity没有显式的指明该Activity的taskAffinity，那么它的这个属性就等于Application指明的taskAffinity，如果Application也没有指明，那么该taskAffinity的值就等于包名。
+
+   执行逻辑：
+
+   在这种模式下，如果Activity指定的栈不存在，则创建一个栈，并把创建的Activity压入栈内。如果Activity指定的栈存在，如果其中没有该Activity实例，则会创建Activity并压入栈顶，如果其中有该Activity实例，则把该Activity实例之上的Activity杀死清除出战，重用并让该Activity实例处在栈顶，然后调用onNewIntent()方法。
+
+   应用场景：
+
+   在大多数App的主页，对于大部分应用，当我们在主界面点击返回按钮都是退出应用，那么当我们第一次进入主界面之后，主界面位于栈底，以后不管我们打开了多少个Activity，只要我们再次回到主界面，都应该使用将主界面Activity上所有的Activity移除的方式来让主界面Activity处于栈顶，而不是往栈顶新加一个主界面Activity的实例，通过这种方式能够保证退出应用时所有的Activity都能被销毁。
+
+4. 单例模式 singleInstance
+
+   作为栈内复用的加强版，打开该Activity时，直接创建一个新的任务栈，并创建该Activity实例放入栈中。一旦该模式的Activity实例已经存在于某个栈中，任何应用在激活该Activity时都会重用该栈中的实例。
+
+   应用场景：呼叫来电界面
+
+**特殊情况：前台栈和后台栈的交互**
+
+![](http://upload-images.jianshu.io/upload_images/3985563-4aeb1947bba27e44.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+![](http://upload-images.jianshu.io/upload_images/3985563-f2eaf1005cdf1b1d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+调用SingleTask模式的后台任务栈的Activity，会把整个栈的Activity压入当前栈的栈顶。singleTask会具有clearTop特性，会把之上的栈内Activity清除。
+
+**Activity的Flags：**
+
+Activity的Flags很多，这里介绍集中常用的，用于设定Activity的启动模式，可以在启动Activity时，通过Intent.addFlags()方法设置。
+
+1. FLAG_ACTIVITY_NEW_TASK 即 singleTask
+2. FLAG_ACTIVITY_SINGLE_TOP 即 singleTop
+3. FLAG_ACTIVITY_CLEAR_TOP 当他启动时，在同一个任务栈中所有位于它之上的Activity都要出栈。如果和singleTask模式一起出现，若被启动的Activity已经存在栈中，则清除其之上的Activity，并调用该Activity的onNewIntent方法。如果被启动的Activity采用standard模式，那么该Activity连同之上的所有Activity出栈，然后创建新的Activity实例并压入栈中。
+
+
+
+### Service
+
+是Android中实现程序后台运行的解决方案，它非常适用于去执行那些不需要和用户交互而且还要长期运行的任务。Service默认并不会运行在子线程中，它也不运行在一个独立的进程中，它同样执行在UI线程中，因此，不要在Service中执行耗时的操作，因此，不要在Service中执行耗时的操作，除非你在Service中创建了子线程来完成耗时操作。
+
+
+
+
+
