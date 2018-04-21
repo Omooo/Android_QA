@@ -924,7 +924,314 @@ Activity的Flags很多，这里介绍集中常用的，用于设定Activity的�
 
 是Android中实现程序后台运行的解决方案，它非常适用于去执行那些不需要和用户交互而且还要长期运行的任务。Service默认并不会运行在子线程中，它也不运行在一个独立的进程中，它同样执行在UI线程中，因此，不要在Service中执行耗时的操作，因此，不要在Service中执行耗时的操作，除非你在Service中创建了子线程来完成耗时操作。
 
+#### Service种类划分
+
+按运行地点分类：
+
+| 类别                   | 区别         | 优点                                       | 缺点                                  | 应用                             |
+| -------------------- | ---------- | ---------------------------------------- | ----------------------------------- | ------------------------------ |
+| 本地服务(Local Service)  | 该服务依附在主进程中 | 服务依附于主进程而不是独立的进程，这样在一定程度上节约了资源，因为Local服务是在同一个进程，所以不需要IPC和AIDL。相应bindService会方便很多。 | 主进程被kill后，服务便会终止                    | 如：音乐播放等不需要常驻的服务                |
+| 远程服务(Remote Service) |            | 服务为独立的进程，对应进程名格式为所在包名加上你指定的 android:process 字符串。由于是独立的进程，因此在Activity所在进程被kill的时候，该服务依然在运行，不受其他进程影响，有利于为多个进程提供服务具有较高的灵活性。 | 该服务是独立的进程，会占用一定的资源，并且使用AIDL进行IPC稍麻烦 | 一些提供系统服务的Service，这种Service是常住的 |
+
+安运行类型分类：
+
+| 类别   | 区别                                       | 应用                                       |
+| ---- | ---------------------------------------- | ---------------------------------------- |
+| 前台服务 | 会在通知栏显示onGoing的Notification              | 当服务被终止的时候，通知栏的Notification也会消失，这样对于用户有一定的通知作用。常见的如音乐播放服务 |
+| 后台服务 | 默认的服务即为后台服务，即不会在通知一栏显示onGoing的Notification | 当服务被终止的时候，用户是看不到效果的。某些不需要运行或者终止提供的服务，如天气更新、日期同步等等 |
+
+按使用方式分类：
+
+| 类别                                | 区别                                       |
+| --------------------------------- | ---------------------------------------- |
+| startService启动的服务                 | 主要用于启动一个服务执行后台任务，不进行通信，停止服务使用stopService |
+| bindService启动的服务                  | 启动的服务要进行通信，停止服务使用unbindService           |
+| 同时使用startService、bindService启动的服务 | 停止服务应同时使用stopService与unbindService       |
+
+#### Service生命周期
+
+startService() --> onCreate() --> onStartCommand() --> Service running --> onDestory() 
+
+bindService() --> onCreate() --> onBind() --> Service running --> onUnbind() --> onDestory()
+
+**onCreate()：**
+
+系统在Service第一次创建时执行此方法，来执行**只运行一次**的初始化工作，如果service已经运行，这个方法不会调用。
+
+**onStartCommand()：**
+
+每次客户端调用startService()方法启动该Service都会回调该方法(**多次调用**)，一旦这个方法执行，service就启动并且在后台长期运行，通过调用stopSelf()或stopService()来停止服务。
+
+**onBind()：**
+
+当组件调用bindService()想要绑定到service时，系统调用此方法(**一次调用**)，一旦绑定后，下次在调用bindService()不会回调该方法。在你的实现中，你必须提供一个返回一个IBinder来使客户端能够使用它与service通讯，你必须总是实现这个方法，但是如果你不允许绑定，那么你应返回null
+
+**onUnbind()：**
+
+当前组件调用unbindService()，想要解除与service的绑定时系统调用此方法(**一次调用**，一旦解除绑定后，下次再调用unbindService()会抛异常)
+
+**onDestory()：**
+
+系统在service不在被使用并且要销毁的时候调用此方法（**一次调用**）。service应在此方法中释放资源，比如线程，已注册的监听器、接收器等等。
+
+#### 三种情况下Service的生命周期
+
+1. startService / stopService
+
+   生命周期：onCreate --> onStartCommand --> onDestory
+
+   如果一个Service被某个Activity调用Context.startService 方法启动，那么不管是否有Activity使用bindService绑定或unbindService解除绑定到该Service，该Service都在后台运行，直到被调用stopService，或自身的stopSelf方法。当然如果系统资源不足，Android系统也可能结束服务，还有一种方法可以关闭服务，在设置中，通过应用 --> 找到自己应用 --> 停止。
+
+   注意：
+
+   第一次startService会触发onCreate和onStartCommand，以后在服务运行过程中，每次startService都只会触发onStartCommand
+
+   不论startService多少次，stopService一次就会停止服务
+
+2. bindService / unbindService
+
+   生命周期：onCreate --> onBind --> onUnbind --> onDestory
+
+   如果一个Service在某个Activity中被调用bindService方法启动，不论bindService被调用几次，Service的onCreate方法只会执行一次，同时onStartCommand方法始终不会调用。
+
+   当建立连接后，Service会一直运行，除非调用unbindService来解除绑定、断开连接或调用该Service的Context不存在了（如Activity被finish --- **即通过bindService启动的Service的生命周期依附于启动它的Context**），系统会在这时候自动停止该Service。
+
+   注意：
+
+   第一次bindService会触发onCreate和inBind，以后在服务运行过程中，每次bindService都不会触发任何回调
+
+3. 混合型
+
+   当一个Service再被启动(startService)的同时又被绑定(bindService)，该Service将会一直在后台运行，不管调用几次，onCreate方法始终只会调用一次，onStartCommand的调用次数与startService调用的次数一致（使用bindService方法不会调用onStartCommand）。同时，调用unBindService将不会停止Service，必须调用stopService或Service自身的stopSelf来停止服务。
+
+
+#### 三种情况下的应用场景
+
+如果你只是想启动一个后台服务长期进行某项任务，那么使用startService便可以了。
+
+如果你想与正在运行的Service取的联系，那么有两种方法，一种是使用broadcast，另外是使用bindService。前者的缺点是如果交流较为频繁，容易造成性能上的问题，并且BroadcastReceiver本身执行代码的时间是很短的（也许执行到一半，后面的代码便不会执行），而后者则没有这些问题，因此我们肯定选择使用bindService（这个时候便同时使用了startService和bindService了，这在Activity中更新Service的某些运行状态是相当有用的）
+
+如果你的服务只是公开了一个远程接口，供连接上的客户端（Android的Service是C/S架构）远程调用执行方法。这个时候你可以不让服务一开始就运行，而只用bindService，这样在第一次bindService的时候才会创建服务的实例运行它，这会节约很多系统资源，特别是如果你的服务是Remote Service，那么该效果会越明显。
 
 
 
+### BroadcastReceiver
 
+广播接收器
+
+作用：用于监听 / 接收 应用发出的广播消息，并作出响应
+
+应用场景：
+
+1. 不同组件之间的通信（包括应用内 / 不同应用之间）
+2. 与Android系统在特定情况下的通信，如当电话呼入时，网络可用时
+3. 多线程通信
+
+#### 实现原理
+
+* 使用了观察者模式：基于消息的发布/订阅事件模型。
+
+* 模型中有三个角色：消息订阅者（广播接收者）、消息发布者（广播发布者）和消息中心（AMS，即Activity Manager Service）
+
+  ![](http://upload-images.jianshu.io/upload_images/944365-0896ba8d9155140e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+* 原理描述
+
+  1. 广播接收者通过Binder机制在AMS注册
+  2. 广播发送者通过Binder机制向AMS发送广播
+  3. AMS根据广播发送者要求，在已注册列表中，寻找合适的广播接收者，寻找依据：IntentFilter / Permission
+  4. AMS将广播发送到合适的广播接收者相应的消息循环队列
+  5. 广播接收者通过消息循环拿到此广播，并回调onReceive()
+
+  注意：广播发送者和广播接收者的执行是异步的，发出去的广播不会关心有没有接收者接收，也不确定接收者何时能接受到。
+
+#### 具体使用
+
+![](http://upload-images.jianshu.io/upload_images/944365-7c9ff656ebd1b981.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+#### 自定义广播接收者BroadcastReceiver
+
+* 继承至BroadcastReceiver基类
+
+* 重写onReceiver()方法
+
+  广播接收器收到相应广播后，会自动回调onReceiver()方法；一般情况下，onReceiver方法会涉及与其他组件之间的交互，如发送Notification、启动service等等；默认情况下，广播接收器运行在UI线程，因此onReceiver方法不能执行耗时操作，否则可能ANR
+
+#### 广播接收器注册
+
+注册方式分为两种：静态注册和动态注册。
+
+**静态注册：**
+
+在AndroidManifest.xml里通过标签声明：
+
+```xml
+<receiver
+  android:enabled=["true" | "false"]
+  //此broadcastReceiver能否接收其他App的发出的广播
+  //默认值是由receiver中有无intent-filter决定的：如果有intent-filter，默认值为true，否则为false
+  android:exported=["true" | "false"]
+  android:icon="drawable resource"
+  android:label="string resource"
+  //继承BroadcastReceiver子类的类名
+  android:name=".mBroadcastReceiver"
+  //具有相应权限的广播发送者发送的广播才能被此BroadcastReceiver所接收；
+  android:permission="string"
+  //BroadcastReceiver运行所处的进程
+  //默认为app的进程，可以指定独立的进程
+  //注：Android四大基本组件都可以通过此属性指定自己的独立进程
+  android:process="string" >
+
+  //用于指定此广播接收器将接收的广播类型
+  //本示例中给出的是用于接收网络状态改变时发出的广播
+  <intent-filter>
+    <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+  </intent-filter>
+</receiver>
+```
+
+**动态注册：**
+
+在代码中通过调用Context的registerReceiver()方法进行动态注册BroadcastReceiver：
+
+```java
+@Override
+protected void onResume() {
+    super.onResume();
+
+    //实例化BroadcastReceiver子类 &  IntentFilter
+    mBroadcastReceiver mBroadcastReceiver = new mBroadcastReceiver();
+    IntentFilter intentFilter = new IntentFilter();
+
+    //设置接收广播的类型
+    intentFilter.addAction(android.net.conn.CONNECTIVITY_CHANGE);
+
+    //调用Context的registerReceiver（）方法进行动态注册
+    registerReceiver(mBroadcastReceiver, intentFilter);
+}
+
+
+//注册广播后，要在相应位置记得销毁广播
+//即在onPause() 中unregisterReceiver(mBroadcastReceiver)
+//当此Activity实例化时，会动态将MyBroadcastReceiver注册到系统中
+//当此Activity销毁时，动态注册的MyBroadcastReceiver将不再接收到相应的广播。
+@Override
+protected void onPause() {
+    super.onPause();
+    //销毁在onResume()方法中的广播
+    unregisterReceiver(mBroadcastReceiver);
+}
+```
+
+注意：
+
+动态广播最好在Activity的onResume()注册，onPause()注销，否则会导致内存泄漏，当然，重复注册和重复注销也不允许。
+
+**两种注册方式的区别：**
+
+| 注册方式        | 特点                                       | 应用场景       |
+| ----------- | ---------------------------------------- | ---------- |
+| 静态注册（常驻广播）  | 常驻，不受任何组件的生命周期影响（应用程序关闭后，如果有信息广播来，程序依旧会被系统调用）缺点：耗电、占内存 | 需要时刻监听广播   |
+| 动态注册（非常驻广播） | 非常驻，灵活，跟随组件的生命周期变化（组件结束 = 广播结束，在组件结束前，必须移除广播接收器） | 需要特定时刻监听广播 |
+
+#### 广播发送者向AMS发送广播
+
+##### 广播的发送
+
+* 广播是用意图（Intent）标识
+* 定义广播的本质：定义广播所具备的意图（Intent）
+* 广播发送：广播发送者将此广播的意图通过sendBroadcast()方法发送出去
+
+##### 广播的类型
+
+广播的类型主要分为5类：
+
+* 普通广播（Normal Broadcast）
+* 系统广播（System Broadcast）
+* 有序广播（Ordered Broadcast）
+* 粘性广播（Sticky Broadcast）
+* App应用内广播（Local Broadcast）
+
+**普通广播：**
+
+即开发者自身定义Intent的广播（最常用），发送广播使用如下：
+
+```java
+Intent intent = new Intent();
+//对应BroadcastReceiver中intentFilter的action
+intent.setAction(BROADCAST_ACTION);
+//发送广播
+sendBroadcast(intent);
+```
+
+* 若被注册了的广播接收者中注册时IntentFilter的action与上述匹配，则会接收此广播（即进行回调onReceiver()），如下mBroadcastReceiver则会接收上述广播：
+
+  ```xml
+  <receiver 
+      //此广播接收者类是mBroadcastReceiver
+      android:name=".mBroadcastReceiver" >
+      //用于接收网络状态改变时发出的广播
+      <intent-filter>
+          <action android:name="BROADCAST_ACTION" />
+      </intent-filter>
+  </receiver>
+  ```
+
+* 若发送广播有相应权限，那么广播接收者也需要相应权限
+
+##### 系统广播
+
+* Android中内置了很多系统广播：只要涉及到手机的基本操作（如开关机、网络状态变化、拍照等等），都会发出相应的广播
+
+* 每个广播都有特定的IntentFilter（包括具体的action）Android系统广播action如下：
+
+  | 系统操作                                     | action                               |
+  | ---------------------------------------- | ------------------------------------ |
+  | 监听网络变化                                   | android.net.conn.CONNECTIVITY_CHANGE |
+  | 关闭或打开飞行模式                                | Intent.ACTION_AIRPLANE_MODE_CHANGED  |
+  | 充电时或电量发生变化                               | Intent.ACTION_BATTERY_CHANGED        |
+  | 电池电量低                                    | Intent.ACTION_BATTERY_LOW            |
+  | 电池电量充足（即从电量低变化到饱满时会发出广播）                 | Intent.ACTION_BATTERY_OKAY           |
+  | 系统启动完成后（仅广播一次）                           | Intent.ACTION_BOOT_COMPLETED         |
+  | 按下照相时的拍照按键（硬件按键）时                        | Intent.ACTION_CAMERA_BUTTON          |
+  | 屏幕锁屏                                     | Intent.ACTION_CLOSE_SYSTEM_DIALOGS   |
+  | 设备当前设置被改变时（设备语言、设备方向等）                   | Intent.ACTION_CONFIGURATION_CHANGED  |
+  | 插入耳机时                                    | Intent.ACTION_HEADSET_PLUG           |
+  | 未正确移除SD卡但已取出来时（正确移除方法：设置SD卡和设备内存--卸载SD卡） | Intent.ACTION_MEDIA_BAD_REMOVAL      |
+  | 插入外部存储装置（如SD卡）                           | Intent.ACTION_MEDIA_CHECKING         |
+  | 成功安装APK                                  | Intent.ACTION_PACKAGE_ADDED          |
+  | 成功删除APK                                  | Intent.ACTION_PACKAGE_REMOVE         |
+  | 重启设备                                     | Intent.ACTION_REBOOT                 |
+  | 屏幕被关闭                                    | Intent.ACTION_SCREEN_OFF             |
+  | 屏幕被打开                                    | Intent.ACTION_SCREENT_ON             |
+  | 关闭系统时                                    | Intent.ACTION_SHUTDOWN               |
+  | 重启设备                                     | Intent.ACTION_REBOOT                 |
+
+  注：当使用系统广播时，只需要在注册广播接收者时定义相关的action即可，并不需要手动发送广播，当系统有相关操作时会自动进行系统广播
+
+##### 有序广播
+
+* 定义：发送出去的广播被接收者按照先后顺序接收，有序是针对广播接收者而言的
+* 广播接收者接收广播的顺序规则（同时面向静态和动态注册的广播接收者）
+  * 按照Priority属性值从大到小排序
+  * Priority属性相同者，动态注册的广播优先
+* 特点：
+  * 接收广播按顺序接收
+  * 先接收的广播接收者可以对广播进行截断，即后接收的广播接收者不在接收到此广播
+  * 先接收的广播接收者可以对广播进行修改，那么后接收的广播接收者将接收到被修改后的广播
+* 具体使用有序广播的使用过程和普通广播非常类似，差异仅在于广播的发送方式：sendOrderedBroadcast(intent);
+
+##### APP应用内广播
+
+* Android中的广播可以跨App直接通信(exported对于有intent-filter情况下默认为true)
+* 冲突可能出现的问题：
+  * 其他App针对性发出与当前App intent-filter 相匹配的广播，由此导致当前App不断接收广播并处理；
+  * 其他App注册与当前App一致的intent-filter用于接收广播，获取广播具体信息。即会出现安全性&效率性的问题
+* 解决方案 使用App应用内广播（Local Broadcast）
+  * App应用内广播可以理解为一种局部广播，广播的发送者和接收者都同属于一个App
+  * 相比于全局广播（普通广播），App应用内广播优势体现在：安全性高 & 效率高
+* 具体使用1 将全局广播设置成局部广播
+  * 注册广播时将exported属性设置为false，使得非本App内部发出的此广播不被接受
+  * 在广播发送和接收时，增设相应权限permission，用于权限验证
+  * 发送广播时指定该广播接收器所在的包名，此广播将只会发送到此包中的App内与之相匹配的有效广播接收器中，通过intent.setPackage(packageName)指定包名
+* 具体使用2 
