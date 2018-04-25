@@ -1224,14 +1224,211 @@ sendBroadcast(intent);
 ##### APP应用内广播
 
 * Android中的广播可以跨App直接通信(exported对于有intent-filter情况下默认为true)
+
 * 冲突可能出现的问题：
   * 其他App针对性发出与当前App intent-filter 相匹配的广播，由此导致当前App不断接收广播并处理；
   * 其他App注册与当前App一致的intent-filter用于接收广播，获取广播具体信息。即会出现安全性&效率性的问题
+
 * 解决方案 使用App应用内广播（Local Broadcast）
   * App应用内广播可以理解为一种局部广播，广播的发送者和接收者都同属于一个App
   * 相比于全局广播（普通广播），App应用内广播优势体现在：安全性高 & 效率高
+
 * 具体使用1 将全局广播设置成局部广播
   * 注册广播时将exported属性设置为false，使得非本App内部发出的此广播不被接受
   * 在广播发送和接收时，增设相应权限permission，用于权限验证
   * 发送广播时指定该广播接收器所在的包名，此广播将只会发送到此包中的App内与之相匹配的有效广播接收器中，通过intent.setPackage(packageName)指定包名
-* 具体使用2 
+
+* 具体使用2 使用封装好的LocalBroadcastManager类
+
+  使用方式上与全局广播几乎相同，只是注册 / 取消注册广播接收器和发送广播时将参数的context变成了LocalBroadcastManager的单一实例
+
+  注：对于LocalBroadcastManager方式发送的应用内广播，只能通过LocalBroadcastManager动态注册，不能静态注册。
+
+  ```java
+  //注册应用内广播接收器
+  //步骤1：实例化BroadcastReceiver子类 & IntentFilter mBroadcastReceiver 
+  mBroadcastReceiver = new mBroadcastReceiver(); 
+  IntentFilter intentFilter = new IntentFilter(); 
+
+  //步骤2：实例化LocalBroadcastManager的实例
+  localBroadcastManager = LocalBroadcastManager.getInstance(this);
+
+  //步骤3：设置接收广播的类型 
+  intentFilter.addAction(android.net.conn.CONNECTIVITY_CHANGE);
+
+  //步骤4：调用LocalBroadcastManager单一实例的registerReceiver（）方法进行动态注册 
+  localBroadcastManager.registerReceiver(mBroadcastReceiver, intentFilter);
+
+  //取消注册应用内广播接收器
+  localBroadcastManager.unregisterReceiver(mBroadcastReceiver);
+
+  //发送应用内广播
+  Intent intent = new Intent();
+  intent.setAction(BROADCAST_ACTION);
+  localBroadcastManager.sendBroadcast(intent);
+  ```
+
+##### 粘性广播
+
+Android 5.0 & API 21中已经失效
+
+
+
+### ContentProvider
+
+内容提供者
+
+#### 作用
+
+进程间进行数据交互&共享，即跨进程通信
+
+![](http://upload-images.jianshu.io/upload_images/944365-3c4339c5f1d4a0fd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+#### 原理
+
+ContentProvider的底层采用Android中的Binder机制
+
+#### 具体使用
+
+![](http://upload-images.jianshu.io/upload_images/944365-5c9b0e2ebed36c3f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+##### 统一资源标识符（RUI）
+
+作用：唯一标识ContentProvider & 其中的数据，外界进程通过URI找到对应的ContentProvider & 其中的数据，再进行数据操作
+
+具体使用：
+
+URI分为系统预置 & 自定义，分别对应系统内置的数据（如通讯录、日程表等等）和自定义数据库。
+
+![](http://upload-images.jianshu.io/upload_images/944365-96019a2054eb27cf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+
+
+```java
+// 设置URI
+Uri uri = Uri.parse("content://com.carson.provider/User/1") 
+// 上述URI指向的资源是：名为 `com.carson.provider`的`ContentProvider` 中表名 为`User` 中的 `id`为1的数据
+
+// 特别注意：URI模式存在匹配通配符* & ＃
+
+// *：匹配任意长度的任何有效字符的字符串
+// 以下的URI 表示 匹配provider的任何内容
+content://com.example.app.provider/* 
+// ＃：匹配任意长度的数字字符的字符串
+// 以下的URI 表示 匹配provider中的table表的所有行
+content://com.example.app.provider/table/#
+```
+
+##### MIME数据类型
+
+* MIME，即多功能Internet邮件扩充服务。它是一种多用途网际邮件扩充协议。MIME类型就是设定某种扩展名的文件用一种应用程序来打开的方式类型，当该扩展名文件被访问的时候，浏览器会自动使用指定应用程序来打开。多用于指定一些客户端自定义的文件名，以及一些媒体文件打开方式。
+
+* 作用：指定某个扩展名的文件用某种应用程序来打开。
+
+* ContentProvider根据URI返回MIME类型
+
+  ```
+  ContentProvider.getType(uri);
+  ```
+
+* MIME类型组成
+
+  每种MIME类型由两部分组成=类型+子类型
+
+  MIME类型是一个包含两部分的字符串，例：
+
+  text / html 类型为text 子类型为html
+
+  text/css    text/xml 等等
+
+  ​
+
+### 3. Context的理解？
+
+Android应用模型是基于组件的应用设计模式，组件的运行要有一个完整的Android工程环境。在这个工程环境下，Activity、Service等系统组件才能够正常工作，而这些组件并不能采用普通的Java对象创建方式，new一下就能创建实例了，而是要有它们各自的上下文环境，也就是Context，Context是维持Android程序中各组件能够正常工作的一个核心功能类。
+
+**如何生动形象的理解Context？**
+
+一个Android程序可以理解为一部电影，Activity、Service、BroadcastReceiver和ContentProvider这四大组件就好比戏了的四个主角，它们是剧组（系统）一开始定好的，主角并不是大街上随便拉个人（new 一个对象）都能演的。有了演员当然也得有摄像机拍摄啊，它们必须通过镜头（Context）才能将戏传给观众，这也就正对应说四大组件必须工作在Context环境下。那么Button、TextView等等控件就相当于群演，显然没那么重用，随便一个路人甲都能演（可以new一个对象），但是它们也必须在面对镜头（工作在Context环境下），所以Button mButtom = new Button(context) 是可以的。
+
+**源码中的Context**
+
+```java
+public abstract class Context {
+}
+```
+
+它是一个纯抽象类，那就看看它的实现类。
+
+![](![img](http://upload-images.jianshu.io/upload_images/1187237-1b4c0cd31fd0193f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+它有两个具体实现类：ContextImpl和ContextWrapper。
+
+其中ContextWrapper类，是一个包装类而已，ContextWrapper构造函数中必须包含一个真正的Context引用，同时ContextWrapper中提供了attachBaseContext()用于给ContextWrapper对象指定真正的Context对象，调用ContextWrapper的方法都会被转向其包含的真正的Context对象。ContextThemeWrapper类，其内部包含了与主题Theme相关的接口，这里所说的主题就是指在AndroidManifest,xml中通过android:theme为Application元素或者Activity元素指定的主题。当然，只有Activity才需要主题，Service是不需要主题的，所以Service直接继承与ContextWrapper，Application同理。而ContextImpl类则真正实现了Context中的所有函数，应用程序中所调用的各种Context类的方法，其实现均来源于该类。**Context得两个子类分工明确，其中ContextImpl是Context的具体实现类，ContextWrapper是Context的包装类。** Activity、Application、Service虽都继承自ContextWrapper（Activity继承自ContextWrapper的子类ContextThemeWrapper），但它们初始化的过程中都会创建ContextImpl对象，由ContextImpl实现Context中的方法。
+
+**一个应用程序有几个Context？**
+
+在应用程序中Context的具体实现子类就是：Activity、Service和Application。那么Context数量=Activity数量+Service数量+1。那么为什么四大组件中只有Activity和Service持有Context呢？BroadcastReceiver和ContextPrivider并不是Context的子类，它们所持有的Context都是其他地方传过去的，所以并不计入Context总数。
+
+**Context能干什么？**
+
+Context能实现的功能太多了，弹出Toast、启动Activity、启动Service、发送广播、启动数据库等等都要用到Context。
+
+```java
+TextView tv = new TextView(getContext());
+
+ListAdapter adapter = new SimpleCursorAdapter(getApplicationContext(), ...);
+
+AudioManager am = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);getApplicationContext().getSharedPreferences(name, mode);
+
+getApplicationContext().getContentResolver().query(uri, ...);
+
+getContext().getResources().getDisplayMetrics().widthPixels * 5 / 8;
+
+getContext().startActivity(intent);
+
+getContext().startService(intent);
+
+getContext().sendBroadcast(intent);
+```
+
+**Context的作用域**
+
+虽然Context神通广大，但并不是随便拿到一个Context实例就可以为所欲为，它的使用还是有一些规则限制的。由于Context的具体实例是由ContextImpl类去实现的，因此在绝大多数场景下，Activity、Service和Application这三种类型的Context都是可以通用的。不过有几种场景比较特殊，比如启动Activity，还有弹出Dialog。出于安全原因的考虑，Android是不允许Activity或Dialog凭空出现的，一个Activity的启动必须要建立在另一个Activity的基础之上，也就是以此形成返回栈。而Dialog则必须在一个Activity上面弹出（除非是System Alert类型的Dialog），因此在这种场景下，我们只能使用Activity类型的Context，否则将会报错。
+
+![](http://upload-images.jianshu.io/upload_images/1187237-fb32b0f992da4781.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+从上图我们可以发现Activity所持有的Context的作用域最广，无所不能，因此Activity继承至ContextThemeWrapper，而Application和Service继承至ContextWrapper，很显然ContextThemeWrapper在ContextWrapper的基础上又做了一些操作使得Activity变得更强大。着重讲一下不推荐使用的两种情况：
+
+1. 如果我们用ApplicationContext去启动一个LaunchMode为standard的Activity的时候会报错：
+
+   android.util.AndroidRuntimeException: Calling startActivity from outside of an Activity context requires the FLAG_ACTIVITY_NEW_TASK flag. Is this really what you want?
+
+   这是因为非Activity类型的Context并没有所谓的任务栈，所以待启动的Activity就找不到栈了。解决这个问题的方法就是为待启动的Activity指定FLAG_ACTIVITY_NEW_TASK标记位，这样启动的时候就为它创建一个新的任务栈，而此时Activity是以singleTask模式启动的。所有这种用Application启动Activity的方式都不推荐，Service同Application。
+
+2. 在Application和Service中去LayoutInflate也是合法的，但是会使用系统默认的主题样式，如果你自定义了某些样式可能不会被使用，这种方式也不推荐使用。
+
+一句话总结：**凡是跟UI相关的，都应该使用Activity作为Context来处理；其他的一些操作，Service、Activity、Application等实例都可以，当然了注意Context引用的持有，防止内存泄露。**
+
+**如何获取Context？**
+
+有四种方法：
+
+1. View.getContext 返回当前View对象的Context对象，通常是当前正在展示的Activity对象。
+2. Activity.getApplicationContext 获取当前Activity所在的进程的Context对象，通常我们使用Context对象时，要优先考虑这个全局的进程Context。
+3. ContextWrapper.getBaseContext() 用来获取一个ContextWrapper进行装饰之前的Context，可以使用这个方法，这个方法在实际开发中使用的不多，也不建议使用。
+4. Activity.this 返回当前Activity实例，如果是UI控件需要使用Activity作为Context对象，但是默认的Toast实际上使用ApplicationContext也可以。
+
+**getApplication()和getApplicationContext()的区别？**
+
+其内存地址是一样的。Application本身就是一个Context，这里获取getApplicationContext得到的结果就是Application本身的实例。getApplication方法的语义性很强，就是用来获取Application实例的，但是这个方法只有在Activity和Service中才能调用的到。那么也许在绝大多数情况下我们都是在Activity或者Service中使用Application，但是如果在一些其他的场景，比如BroadcastReceiver中也想获取Application实例，这时就可以借助getApplicationContext方法了。
+
+```java
+public class MyReceiver extends BroadcastReceiver{
+  @Override
+  public void onReceive(Contextcontext,Intentintent){
+    Application myApp= (Application)context.getApplicationContext();
+  }
+}
+```
+
