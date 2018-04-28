@@ -1432,3 +1432,195 @@ public class MyReceiver extends BroadcastReceiver{
 }
 ```
 
+
+
+### AsyncTask详解
+
+#### Android中的线程
+
+在操作系统中，线程是操作系统调度的最小单元，同时线程又是一种受限的系统资源，即线程不可能无限制的产生，并且**线程的创建和销毁都会有相应的开销**。当系统中存在大量的线程时，系统会通过时间片轮转的方式调度每个线程，因此线程不可能做到绝对的并行。
+
+如果在一个进程中频繁的创建和销毁线程，显然不是高效地做法。正确的做法是采用线程池，一个线程池会缓存一定数量的线程，通过线程池就可以避免因为频繁创建和销毁线程所带来的系统开销。
+
+#### AsyncTask简介
+
+AsyncTask是一个抽象类，它是由Android封装的一个轻量级异步类，它可以在线程池中执行后台任务，然后把执行的进度和最终结果传递给主线程并在主线程中更新UI。
+
+AsyncTask的内部封装了两个线程池（SerialExecutor和THREAD_POOL_EXECUTOR）和一个Handle（InternalHandler）。
+
+其中SerialExecutor线程池用于任务的排队，让需要执行的多个耗时任务，按顺序排列，THREAD_POLL_EXECUTOR线程池才真正的执行任务，InternalHandler用于从工作线程切换到主线程。
+
+##### AsyncTask的泛型参数
+
+AsyncTask的类声明如下：
+
+```java
+public abstract class AsyncTask<Params,Progress,Result>
+```
+
+AsyncTask是一个抽象泛型类。
+
+Params：开始异步任务时传入的参数类型
+
+Progress：异步任务执行过程中，返回下载进度值的类型
+
+Result：异步任务执行完成后，返回的结果类型
+
+如果AsyncTask确定不需要传递具体参数，那么这三个泛型参数可以用Void来代替。
+
+##### AsyncTask的核心方法
+
+**onPreExecute()**
+
+这个方法会在**后台任务开始执行之前调用，在主线程执行**。用于进行一些界面上的初始化操作，比如显示一个进度条对话框等等。
+
+**doInBackground(Params...)**
+
+这个方法中的所有代码都会在子线程中运行，我们应该在这里去处理所有的耗时任务。
+
+任务一旦完成就可以通过return语句来将任务的执行结果进行返回，如果AsyncTask的第三个泛型参数指定的是Void，就可以不返回任务执行结果。**注意，这个方法中是不可以进行UI操作的，如果需要更新UI元素，比如说反馈当前任务的执行进度，可以调用publishProgress(Progress ...)方法来完成。**
+
+**onProgressUpdate(Progress...)**
+
+当在后台任务中调用了publishProgress(Progress...)方法后，这个方法就很快被调用，方法中携带的参数就是在后台任务中传递过来的。**在这个方法中可以对UI进行操作，在主线程中进行，利用参数中的数值就可以对界面元素进行相应的更新。**
+
+**onPostExecute(Result)**
+
+当doInBackground(Params...)执行完毕并通过return语句进行返回时，这个方法就很快被调用。返回的数据会作为参数传递到此方法中，**可以利用返回的数据来进行一些UI操作，在主线程中进行，比如说提醒任务执行的结果，以及关闭掉进度条对话框等等。**
+
+上面几个方法的调用顺序为：onPreExecute() --> doInBackground() --> publishProgress() --> onProgressUpdate() --> onPostExecute()
+
+如果不需要执行更新进度则为：onPreExecute() --> doInBackground() --> onPostExecute()
+
+除了上面四个方法，AsyncTask还提供了onCancelled()方法，**它同样在主线程中执行，当异步任务取消时，onCancelled会被调用，这个时候onPostExecute()则不会调用，但是，AsyncTask的cancel()方法并不是真正的去取消任务，只是设置这个任务为取消状态，我们需要在doInBackground()判断终止任务。就好比想要终止一个线程，调用interrupt()方法，只是进行标记为中断，需要在线程内部进行标记判断然后中断线程。**
+
+##### 使用AsyncTask的注意事项
+
+1. 异步任务的实例必须在UI线程中创建，即AsyncTask对象必须在UI线程中创建。
+2. execute(Params ... params)方法必须在UI线程中调用。
+3. 不要手动调用onPreExecute()、doInBackground(Params ... params)、onProgressUpdate()、onPostExecute() 这几个方法。
+4. 不能在doInBackground()中更改UI组件信息。
+5. 一个任务实例只能执行一次，如果执行第二次将会抛异常。
+
+
+
+### Android虚拟机以及编译过程
+
+#### 什么是Dalvik虚拟机？
+
+Dalvik是Google公司自己设计用于Android平台的Java虚拟机，它是Android平台的重要组成部分，支持dex格式的Java应用程序的运行。dex格式是专门为Dalvik设计的一种压缩格式，适合内存和处理器速度有限的系统。Google对其进行了特定的优化，是的Dalvik具有**高效、简洁、节省资源**的特点。从Android系统架构图知，Dalvik虚拟机运行在Android的运行时库层。
+
+Dalvik作为面向Linux、为嵌入式操作系统设计的虚拟机，主要负责完成对象生命周期、堆栈管理、线程管理、安全和异常管理，以及垃圾回收等。另外，Dalvik早期并没有JIT编译器，知道Android2.2才加入了对JIT的技术支持。
+
+#### Dalvik虚拟机的特点
+
+体积小，占用内存空间小。
+
+专有的DEX可执行文件格式，体积更小，执行速度更快。
+
+常量池采用32位索引值，寻址类方法名、字段名，常量更快。。
+
+基于寄存器架构，并拥有一套完整的指令系统。
+
+提供了对象生命周期管理，堆栈管理，线程管理，安全和异常管理以及垃圾回收等重要功能。
+
+所有的Android程序都运行在Android系统进程里，每个进程对应着一个Dalvik虚拟机实例。
+
+#### Dalvik虚拟机与Java虚拟机的区别
+
+Dalvik虚拟机与传统的Java虚拟机有着许多不同点，两者并不兼容，它们显著的不同点主要表现在以下几个方面：
+
+**Java虚拟机运行的是Java字节码，Dalvik虚拟机运行的是Dalvik字节码。**
+
+传统的Java程序经过编译，生成Java字节码保存在class文件中，Java虚拟机通过解码class文件中的内容来运行程序。而Dalvik虚拟机运行的是Dalvik字节码，所有的Dalvik字节码由Java字节码转换而来，并被打包到一个DEX可执行文件中。Dalvik虚拟机通过解码DEX文件来执行这些字节码。
+
+![](http://upload-images.jianshu.io/upload_images/3985563-9deada32508b8ee5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+**Dalvik可执行文件体积小，Android SDK中有一个叫dx的工具负责将Java字节码转换为Dalvik字节码。**
+
+消除其中的冗余信息，重新组合形成一个常量池，所有的类文件共享同一个常量池。由于dx工具对常量池的压缩，使得相同的字符串常量在DEX文件中只出现一次，从而减小了文件的体积。
+
+简单来讲，dex格式文件就是将多个class文件中公有的部分统一存放，去除冗余信息。
+
+**Java虚拟机与Dalvik虚拟机架构不同，这也是Dalvik与JVM之间最大的区别。**
+
+**Java虚拟机基于栈架构。**程序在运行时虚拟机需要频繁的从栈上读取或写入数据，这个过程需要更多的指令分配与内存访问次数，会耗费不少CPU时间，对于像手机设备资源有限来说，这是相当大的一笔开销。
+
+**Dalvik虚拟机基于寄存器架构。**
+
+数据的访问通过寄存器间直接传递，这样的访问方式比基于栈方式要快很多。
+
+#### Dalvik虚拟机的结构
+
+![](http://upload-images.jianshu.io/upload_images/3985563-4da3de576e6a045d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+一个应用首先经过DX工具将class文件转换成Dalvik虚拟机可以执行的dex文件，然后由类加载器加载原生类和Java类，接着由解释器根据指令集对Dalvik字节码进行解释、执行。最后，根据dvm_arch参数选择编译的目标机体系结构。
+
+#### Android APK编译打包流程
+
+![](http://upload-images.jianshu.io/upload_images/3985563-cdba319dab32d0c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+1. Java编译器对工程本身的java代码进行编译，这些java代码有三个来源：App的源代码，由资源文件生成的R文件（aapt工具），以及有aidl文件生成的java接口文件（aidl工具），产出为.class文件。
+   * 用AAPT编译R.java文件
+   * 编译AIDL的java文件
+   * 把java文件编译成class文件
+2. class文件和依赖的第三方库文件通过dex工具生成Dalvik虚拟机可执行的.dex文件，包含了所有的class信息，包括项目自身的class和依赖的class，产出为.dex文件。
+3. apkbuilder工具将.dex文件和编译后的资源文件生成未经签名对齐的apk文件。这里编译后的资源文件包括两部分，一是由aapt编译产出的编译后的资源文件，二是依赖的第三方库里的资源文件，产出未经签名的.apk文件。
+4. 分别由Jarsugner和zipalign对apk文件进行签名和对齐，生成最终的apk文件。
+
+**总结：编译 --> DEX --> 打包 --> 签名和对齐**
+
+#### ART虚拟机与Dalvik虚拟机的区别
+
+##### 什么是ART？
+
+ART代表Android Runtime，其处理应用程序执行的方式完全不同于Dalvik，Dalvik是依靠一个Just-In-Time（JIT）编译器去解释字节码。开发者编译后的应用代码需要通过一个解释器在用户的设备上运行，这一机制并不高效，但让应用能更容易在不同硬件和架构上运行。ART则完全改变了这套做法，在应用安装时就预编译字节码到机器语言，这一机制叫Ahead-Of-Time（AOT）编译。在移除解释代码这一过程后，应用程序执行将更加效率。启动更快。
+
+##### ART优点：
+
+1. 系统性能的显著提升。
+2. 应用启动更快、运行更快、体验更流畅、触摸反馈更及时。
+3. 更长的电池续航能力
+4. 支持更低的硬件。
+
+##### ART缺点：
+
+1. 更大的存储空间占用，可能会增加10%-20%
+2. 更长的应用安装时间
+
+#### ART虚拟机相对于Dalvik虚拟机的提升
+
+##### 预编译
+
+在Dalvik中，如同其他大多数JVM一样，都采用的是JIT来做及时翻译（动态翻译），将dex或odex中并排的Dalvik code（或者叫smali指令集）运行态翻译成native code去执行。JIT的引入使得Dalvik提升了3-6倍的性能。
+
+而在ART中，完全抛弃了Dalvik的JIT，使用了AOT直接在安装时将其完全翻译成native code。这一技术的引入，使得虚拟机执行指令的速度又一重大提升。
+
+##### 垃圾回收机制
+
+首先介绍下Dalvik的GC过程，主要有四个过程：
+
+1. 当GC被触发时候，其会去查找所有活动的对象，这个时候整个程序与虚拟机内部的所有线程就会挂起，这样目的是在较少的堆栈里找到所引用的对象。
+2. GC对符合条件的对象进行标记。
+3. GC对标记的对象进行回收。
+4. 恢复所有线程的执行现场继续运行。
+
+**Dalvik这么做的好处是，当pause了之后，GC势必是相当快速的，但是如果出现GC频繁并且内存吃紧势必会导致UI卡顿、掉帧、操作不流畅等等。**
+
+后来ART改善了这种GC方式，主要的改善点在将其**非并发过程改成了部分并发，还有就是对内存的重新分配管理。**
+
+当ART GC发生时：
+
+1. GC将会锁住Java堆，扫描并进行标记。
+2. 标记完毕释放掉Java堆的锁，并且挂起所有线程。
+3. GC对标记的对象进行回收。
+4. 恢复所有线程的执行继续运行。
+5. **重复2-4直到结束。**
+
+可以看出整个过程做到了部分并发使得时间缩短，GC效率提高两倍。
+
+##### 提高内存使用，减少碎片化
+
+Dalvik内存管理特点是：内存碎片化严重，当然这也是标记清除算法带来的弊端。
+
+**ART的解决：** 在ART中，它将Java分了一块空间命名为 Large-Object-Space，这个内存空间的引入用来专文存放大对象，同时ART又引入了 moving collector 的技术，即将不连续的物理内存快进行对齐。对齐之后内存碎片化就得到了很好的解决。Large-Object-Space的引入是因为moving collector对大块内存的位移时间成本太高。据官方统计，ART的内存利用率提高了10倍左右，大大提高了内存的利用率。
