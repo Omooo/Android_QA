@@ -1697,3 +1697,44 @@ Dalvik内存管理特点是：内存碎片化严重，当然这也是标记清�
 [进程保活方案1](https://www.jianshu.com/p/845373586ac1)
 
 [Android进程保活招式大全](http://geek.csdn.net/news/detail/95035)
+
+
+
+### Android 消息机制
+
+#### 消息机制简介
+
+在Android中使用消息机制，我们首先想到的就是Handler。没错，Handler是Android消息机制的上层接口。我们通常只会接触到Handler和Message开完成消息机制，其实内部还有两大助手共同完成消息传递。
+
+#### 消息机制模型
+
+消息机制主要包含：MessageQueue、Handler、Looper和Message这四大部分。
+
+* Message
+
+  需要传递的消息，可以传递数据
+
+* MessageQueue
+
+  消息队列，但是它的内部实现并不是用的队列，实际上是通过一个单链表的数据结构来维护消息列表，因为单链表在插入和删除上比较有优势。主要功能是向消息池传递消息（MessageQueue.enqueueMessage）和取走消息池的消息（MessageQueue.next）
+
+* Handle
+
+  消息辅助类，主要功能是向消息池发送各种消息事件（Handler.sendMessage）和处理相应消息事件（Handler.handleMessage）
+
+* Looper
+
+  不断循环执行（Looper.loop），从MessageQueue中读取消息，按分发机制将消息分发给目标处理者。
+
+#### 消息机制的架构
+
+**运行流程：**
+
+在子线程执行完耗时操作，当Handler发送消息时，将会调用MessageQueue.enqueueMessage，向消息队列中添加消息。当通过Looper.loop开启循环后，会不断的从线程池中读取消息，即调用MessageQueue.next，然后调用目标Handler（即发送该消息的Handler）的dispatchMessage方法传递消息，然后返回到Handler所在线程，目标Handler收到消息，调用handleMessage方法，接收消息，处理消息。
+
+**MessageQueue、Handler和Looper三者之间的关系：**
+
+每个线程中只能存在一个Looper，Looper是保存在ThreadLocal中。主线程已经创建一个Looper，所以在主线程中不需要在创建Looper，但是在其他线程中需要创建Looper。每个线程中可以有多个Handler，即一个Looper可以处理来自多个Handler的消息。Looper中维护一个MessageQueue，来维护消息队列，消息队列中的Message可以来自不同的Handler。
+
+#### 源码解析
+
