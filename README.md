@@ -1649,7 +1649,7 @@ public class MyReceiver extends BroadcastReceiver{
 
 
 
-### AsyncTask详解
+### 4. AsyncTask详解
 
 #### Android中的线程
 
@@ -1719,7 +1719,7 @@ Result：异步任务执行完成后，返回的结果类型
 
 
 
-### Android虚拟机以及编译过程
+### 5. Android虚拟机以及编译过程
 
 #### 什么是Dalvik虚拟机？
 
@@ -1842,7 +1842,7 @@ Dalvik内存管理特点是：内存碎片化严重，当然这也是标记清�
 
 
 
-### 进程保活方案
+### 6. 进程保活方案
 
 #### 保活的两个方案
 
@@ -1915,7 +1915,7 @@ Dalvik内存管理特点是：内存碎片化严重，当然这也是标记清�
 
 
 
-### Android 消息机制
+### 7. Android 消息机制
 
 #### 消息机制简介
 
@@ -1957,7 +1957,7 @@ Dalvik内存管理特点是：内存碎片化严重，当然这也是标记清�
 
 
 
-### Window、Activity、DecorView以及ViewRoot之间的关系
+### 8. Window、Activity、DecorView以及ViewRoot之间的关系
 
 #### 职能简介
 
@@ -1991,5 +1991,150 @@ ViewRoot并不属于View树的一份子。从源码实现上来看，它既是�
 
 Activity就像个控制器，不负责视图部分。Window像个承载器，装着内部视图。DecorView就是个顶级视图，是所有View的最外层布局。ViewRoot像个连接器，负者沟通，通过硬件感知来通知视图，进行用户之间的交互。
 
+### 9. Android事件分发机制
+
+[图解 Android 事件分发机制](https://www.jianshu.com/p/e99b5e8bd67b)
+
+简述：
+
+* Activity --> ViewGroup --> View 责任链模式
 
 
+* dispatchTouchEvent 和 onTouchEvent 一旦 return true，事件就停止传递了（到达终点，没有谁再能收到这个事件），对于 return true 我们经常说事件被消费了，消费了的意思就是事件走到这里就是终点，不会往下传，没有谁能在收到这个事件了。
+* dispatchTouchEvent 和 onTouchEvent return false 的时候事件都会回传给父控件的 onTouchEvent处理。对于dispatchTouchEvent返回false的含义应该是：事件停止往子View传递和分发同时开始往父控件回溯（父控件的onTouchEvent开始从下往上回传直到某个onTouchEvent return true），事件分发机制就像递归，return false 的意义就是递归停止然后开始回溯。
+* 对于onTouchEvent return false就比较简单了，它就是不消费事件，并让事件继续往父控件的方向从下往上流动。
+* oninterceptTouchEvent，用于事件拦截，只存在于ViewGroup中，如果返回true就会交给自己的onTouchEvent处理，如果不拦截就是往子控件往下传递。默认是不会去拦截的，因为子View也需要这个事件，所以onInterceptTouchEvent拦截器return super和false是一样的，事件往子View的dispatchTouchEvent传递。
+* 对于ViewGroup，dispatchTouchEvent，之前说的return true就是终结传递，return false就是回溯到父View的onTouchEvent。那么ViewGroup怎样通过dispatchTouchEvent方法能把事件分发到自己的onTouchEvent处理呢？return false 和 true 都不行，那么只能通过 onInterceptTouchEvent把事件拦截下来给自己的onTouchEvent，所以ViewGroup的dispatchTouchEvent方法的super默认实现就是去调用onInterceptTouchEvent，记住这一点。
+
+**总结：**
+
+* 对于dispatchTouchEvent，onTouchEvent，return true 是终结事件传递，return false是回溯父View的onTouchEvent方法
+* ViewGroup想把事件分发给自己的onTouchEvent处理，需要拦截器onInterceptTouchEvent方法return true把事件拦截下来
+* ViewGroup的拦截器onInterceptTouchEvent默认是不拦截的，所以return super和return false是一样的
+* View没有拦截器，为了让View可以把事件分发给自己的onTouchEvent处理，View的dispatchTouchEvent默认实现（super）就是把事件分发给自己的onTouchEvent
+
+### 10. dp、sp、px的理解以及相互转换
+
+**px**
+
+像素，对应于屏幕上的实际像素。在画分割线的可以用到，用其他单位画可能很模糊。
+
+**dp、dip**
+
+与密度无关的像素单位，基于屏幕的物理尺寸的抽象单位，在160dpi的屏幕上1dp相当于1px，一般用于空间大小的单位。
+
+**sp**
+
+与缩放无关的像素单位，类似dp，不用之处在于它还会根据用户字体大小配置而缩放。开发中指定字体大小时建议使用sp，因为它会根据屏幕密度和用户字体配置而适配
+
+```java
+DisplayMetrics dm = getResources().getDisplayMetrics();
+int dpi       = dm.densityDpi;    // 屏幕Dpi
+int width     = dm.widthPixels;   // 当前屏幕可用空间的宽(像素)
+int height    = dm.heightPixels;  // 高(像素)
+float density = dm.density;       // 屏幕密度
+float scale   = dm.scaledDensity; // 字体缩放比例
+
+// 获得设备的配置信息
+Configuration c = getResources().getConfiguration();
+int widthDp     = c.screenWidthDp;  // 当前屏幕可用空间的宽(dp)
+int heightDp    = c.screenHeightDp; // 高(dp)
+int dpi2        = c.densityDpi;     // 屏幕Dpi
+float fontScale = c.fontScale;      // 字体缩放比例
+```
+
+```java
+	/**
+     * 将px值转换为dip或dp值
+     * @param pxValue
+     * @return
+     */
+    public static int px2dip(Context context, float pxValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (pxValue / scale + 0.5f);
+    }
+
+    /**
+     * 将dip或dp值转换为px值
+     *
+     * @param dipValue
+     * @return
+     */
+    public static int dip2px(Context context, float dipValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dipValue * scale + 0.5f);
+    }
+
+    /**
+     * 将px值转换为sp值
+     * @param pxValue
+     * @return
+     */
+    public static int px2sp(Context context, float pxValue) {
+        final float fontScale = context.getResources().getDisplayMetrics().scaledDensity;
+        return (int) (pxValue / fontScale + 0.5f);
+    }
+
+    /**
+     * 将sp值转换为px值
+     * @param spValue
+     * @return
+     */
+    public static int sp2px(Context context, float spValue) {
+        final float fontScale = context.getResources().getDisplayMetrics().scaledDensity;
+        return (int) (spValue * fontScale + 0.5f);
+    }
+```
+
+### 11. RelativeLayout和LinearLayout在实现效果同等的情况下使用哪个？为什么？
+
+[Android中RelativeLayout和LinearLayout性能分析](https://www.jianshu.com/p/8a7d059da746)
+
+选择LinearLayout，因为RelativeLayout在measure过程需要两次。
+
+```java
+	//RelativeLayout源码
+	View[] views = mSortedHorizontalChildren;
+    int count = views.length;
+    for (int i = 0; i < count; i++) {
+      /**/
+		measureChildHorizontal(child, params, myWidth, myHeight);
+    }
+	/**/
+	for (int i = 0; i < count; i++){
+      /***/
+      measureChild(child, params, myWidth, myHeight);
+	}
+
+	//LinearLayout
+	@Override
+  	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    	if (mOrientation == VERTICAL) {
+      		measureVertical(widthMeasureSpec, heightMeasureSpec);
+    	} else {
+      		measureHorizontal(widthMeasureSpec, heightMeasureSpec);
+    	}
+  	}
+
+```
+
+从源码我们发现RelativeLayout会对子View做两次measure。这是为什么呢？首先RelativeLayout中子View的排列方式是基于彼此的依赖关系，而这个依赖关系可能和布局中View的顺序并不相同，在确定每个子View的位置的时候，就需要先给所有的子View排序一下。又因为RelativeLayout允许A B两个子View，横向上B依赖于A，纵向上A依赖于B，所以需要横向纵向分别进行一次排序测量。
+
+RelativeLayout另外一个性能问题：
+
+View的measure方法里对绘制过程做了一个优化，如果我们的子View没有要求强制刷新，而父View给子View的传入值也没有变化，也就说子View的位置没有变化，就不会做无谓的measure。但是上面已经说了RelativeLayout要做两次measure，而在做横向测量时，纵向的测量结果尚未完成，只好暂时使用myHeight传入子View系统，假如子View的Height不等于（设置了margin）myHeight的高度，那么measure中优化则不起作用，这一过程将进一步影响RelativeLayout的绘制性能。而LinearLayout则无这方面的担忧，解决这个问题也很好办，如果可以，尽量使用padding代替margin。
+
+**结论**
+
+* RelativeLayout会让子View调用两次onMeasure，LinearLayout再有weight时，也会调用子View两次onMeasure
+* RelativeLayout的子View如果高度和RelativeLayout不同，则会引发效率问题。当子View很复杂时，这个问题会更加严重。如果可以，尽量使用padding代替margin
+* 在不影响层级深度的情况下，使用LinaerLayout和FrameLayout而不是RelativeLayout
+
+### 12. 布局相关的 <merge>、<viewstub> 控件作用及实现原理
+
+[从源码角度分析ViewStub 疑问与原理](https://blog.csdn.net/androiddevelop/article/details/46632323)
+
+* ViewStub本身是一个视图，会被添加到界面上，之所以看不到是因为其设置了隐藏与不绘制
+* 当调用infalte或者ViewStub.setVisibilty(View.VISIBLE)时（两个都使用infalte逻辑），先从父视图上把当前ViewStub删除，再把加载的android:layout视图添加上
+* 把ViewStub LayoutParams 添加到加载的android:layout视图上，而其根节点的LayoutParams设置无效
+* ViewStub是指用来占位的视图，通过删除自己并添加android:layout视图达到懒加载效果
