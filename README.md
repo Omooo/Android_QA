@@ -2138,3 +2138,148 @@ View的measure方法里对绘制过程做了一个优化，如果我们的子Vie
 * 当调用infalte或者ViewStub.setVisibilty(View.VISIBLE)时（两个都使用infalte逻辑），先从父视图上把当前ViewStub删除，再把加载的android:layout视图添加上
 * 把ViewStub LayoutParams 添加到加载的android:layout视图上，而其根节点的LayoutParams设置无效
 * ViewStub是指用来占位的视图，通过删除自己并添加android:layout视图达到懒加载效果
+
+
+
+
+
+### 数据结构
+
+* 线性表
+* 栈和队列
+* 树
+* 图
+* 散列查找
+* 排序
+* 海量数据处理
+
+#### 线性表
+
+##### 概述
+
+线性表是一种线性结构，它是具有相同类型的n(n>=0)个数据元素组成的有限序列。本章先介绍线性表的几个基本组成部分：数组、单向链表、双向链表。
+
+**数组**
+
+数组有上界和下界，数组的元素在上下界内是连续的。
+
+存储10,20,30,40,50的数组的示意图如下：
+
+![](http://images.cnitblog.com/blog/497634/201402/231243264043298.jpg)
+
+数组的特点是：
+
+数据是连续的；随机访问速度快。数组中稍微复杂一点的是多维数组和动态数组。对于C语言而言，多维数组本质上也是通过一维数组实现的。至于动态数组，是指数组的容量能动态增长的数组；对于Java而言，Collection集合中提供了ArrayList和Vector。
+
+**单向链表**
+
+单链表是链表的一种，它由节点组成，每个节点都包含下一个节点的指针。
+
+![](http://images.cnitblog.com/blog/497634/201402/231244591436996.jpg)
+
+表头为空，表头的后继节点是“节点10”（数据是10的节点），“节点10”的后继节点是“节点20”（数据为20的节点）......
+
+单链表删除节点：
+
+![](http://images.cnitblog.com/blog/497634/201402/231246130639479.jpg)
+
+单链表添加节点：
+
+![](http://images.cnitblog.com/blog/497634/201402/231246431888916.jpg)
+
+单链表的特点是：
+
+节点的链接方向是单向的；相对于数组来说，单链表的随机访问速度较慢，但是单链表删除 / 添加数据的效率很高。
+
+**双向链表**
+
+双向链表是链表的一种，和单链表一样，双链表也是由节点组成，它的每个数据节点中都有两个指针，分别指向直接后继和直接前驱。所以，从双向链表中的任意一个节点开始，都可以很方便的访问它的前驱结点和后继结点，一般我们都构造双向循环链表。
+
+![](http://images.cnitblog.com/blog/497634/201402/231247423393589.jpg)
+
+双链表删除节点：
+
+![](http://images.cnitblog.com/blog/497634/201402/231248185524615.jpg)
+
+双链表添加节点：
+
+![](http://images.cnitblog.com/blog/497634/201402/231248185524615.jpg)
+
+**总结**
+
+链表（LinkedList）是一种常见的基础数据结构，是一种线性表，但是并不会按线性的顺序存储数据，而是在每一个节点里存下一个节点的指针，简单来说链表并不像数组那样将数组存储在一个连续的内存地址空间里，它们可以不是连续的因为他们每个节点保存着下一个节点的引用地址，所以较数组来说是一个优势。
+
+* 链表增删元素的时间复杂度为O(1)，查找一个元素的时间复杂度为O(n)
+* 单链表不用像数组那样预先分配存储空间的大小，避免了空间浪费
+* 单链表不能进行回溯操作
+
+**单链表的基本操作**
+
+获取单链表的长度：
+
+由于单链表的存储地址是不连续的，链表并不具有直接获取链表长度的功能，对于一个链表的长度我们只能依次去遍历链表的节点，直到找到某个节点的下一个节点为空的时候得到链表的总长度。注意这里的出发点并不是一个空链表然后依次添加节点后，然后去读取已经记录的节点个数，而是已知一个链表的头节点然后去获取这个链表的长度。
+
+```java
+public int getLength(Node head){
+    
+    if(head == null){
+        return 0;
+    }
+    
+    int len = 0;
+    while(head != null){
+        len++;
+        head = head.next;
+    }  
+    return len;  
+}
+```
+
+查询指定索引的节点值或指定值的节点值的索引：
+
+由于链表是一种非连续性的存储结构，节点的内存地址不是连续的，也就是说链表不能像数组那样可以通过索引值获取索引元素的位置。所以链表的查询的时间复杂度要是O(n)级别的，这点和数组查询指定值的元素位置是相同的，因为你要查找的东西在内存中的存储地址都是不一定的。
+
+```java
+/** 获取指定角标的节点值 */
+    public int getValueOfIndex(Node head, int index) throws Exception {
+
+        if (index < 0 || index >= getLength(head)) {
+            throw new Exception("角标越界！");
+        }
+
+        if (head == null) {
+            throw new Exception("当前链表为空！");
+        }
+
+        Node dummyHead = head;
+
+        while (dummyHead.next != null && index > 0) {
+            dummyHead = dummyHead.next;
+            index--;
+        }
+
+        return dummyHead.value;
+    }
+
+    
+    /** 获取节点值等于 value 的第一个元素角标 */
+    public int getNodeIndex(Node head, int value) {
+    
+            int index = -1;
+            Node dummyHead = head;
+    
+            while (dummyHead != null) {
+                index++;
+                if (dummyHead.value == value) {
+                    return index;
+                }
+                dummyHead = dummyHead.next;
+            }
+    
+            return -1;
+    }
+```
+
+**链表添加一个元素**
+
+链表的插入操作分为头插法、尾插法和随机节点插入法。当然数据结构讲的时候也是针对一个已经构造好的（保存了链表头部节点和尾部节点引用）
