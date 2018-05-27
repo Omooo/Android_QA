@@ -2142,6 +2142,65 @@ View的measure方法里对绘制过程做了一个优化，如果我们的子Vie
 
 
 
+### Fragment详解
+
+#### 生命周期
+
+![](https://images2015.cnblogs.com/blog/945877/201611/945877-20161123093212096-2032834078.png)
+
+#### Fragment使用方式
+
+**静态使用**
+
+步骤：
+
+1. 创建一个类继承Fragment，重写onCreateView方法，来确定Fragment要显示的布局
+2. 在Activity的布局xml文件中添加< fragment >标签，并声明name属性为Fragemnt的全限定名，**而且必须给该控件(fragment)一个id或者tag**
+
+**动态使用**
+
+步骤：
+
+1. 在Activity的布局xml文件中添加一个FrameLayout，此控件是Fragment的容器。
+2. 准备好Fragment并实例化，获取Fragment管理器对象 FragmentManager。
+3. 然后通过Fragment管理器调用beginTransaction()，实例化FragmentTransaction对象，即开启事务。
+4. 执行事务并提交。FragmentTransaction对象有以下几种方法：
+   * add()  向Activity中添加一个Fragment
+   * remove() 从Activity中移除一个Fragment，如果被移除的Fragment没有添加到回退栈，这个Fragment实例将会被销毁
+   * replace() 使用一个Fragment替换当前的，实际上就是remove + add
+   * hide() 隐藏当前的Fragment，仅仅设为不可见，并不会销毁
+   * show() 显示之前隐藏的Fragment
+   * detach() 会将view从UI中移除，和remove()不同，此时fragment的状态依然由FragmentManager维护
+   * attach() 重建View视图，附加到UI上并显示
+   * commit() 提交事务
+
+**回退栈**
+
+Fragment的回退栈是用来保存每一次Fragment事务发生的变化，如果将Fragment任务添加到回退栈，当用户点击后退按钮时，将会看到上一次保存的Fragment，一旦Fragment完全从回退栈中弹出，用户再次点击后退键，则会退出当前Activity。
+
+FragmentTransaction.addToBackStack(String) 把当前事务的变化情况添加到回退栈。
+
+**Fragment与Activity之间的通信**
+
+Fragment依附于Activity存在，因此与Activity之间的通信可以归纳为以下几种：
+
+* 如果Activity中包含自己管理的Fragment的引用，可以通过访问其public方法进行通信
+* 如果Activiy中没有保存任何Fragment的引用，那么没关系，每个Fragment都有一个唯一的TAG或者ID，可以通过getFragmentManager.findFragmentByTag()或者findFragmentById()获得Fragment实例，然后进行操作
+* Fragment中可以通过getActivity()得到当前绑定的Activity实例，然后进行操作
+* setArguments(Bundle) / getArguments()
+
+**通信优化**
+
+接口实现
+
+**如何处理运行时配置发生变化**
+
+横竖屏切换时导致Fragment多次重建绘制：
+
+不要在构造函数中传递参数，最好通过setArguments()传递。
+
+在onCreate(Bundle savedInstanceState)中判断savedInstanceState为空时在重建，当发生重建时，原本的数据如何保持？类似Activity，Fragment也有onSaveInstanceState方法，在此方法中进行保存数据，然后在onCreate或者onCreateView或者onActivityCreated进行恢复都可以。
+
 
 ### 数据结构
 
