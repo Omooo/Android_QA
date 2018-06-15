@@ -1134,6 +1134,18 @@ Activity的Flags很多，这里介绍集中常用的，用于设定Activity的�
 3. FLAG_ACTIVITY_CLEAR_TOP 当他启动时，在同一个任务栈中所有位于它之上的Activity都要出栈。如果和singleTask模式一起出现，若被启动的Activity已经存在栈中，则清除其之上的Activity，并调用该Activity的onNewIntent方法。如果被启动的Activity采用standard模式，那么该Activity连同之上的所有Activity出栈，然后创建新的Activity实例并压入栈中。
 
 
+**Activity的启动过程**
+
+![](https://i.loli.net/2018/06/05/5b1642023c7d7.png)
+
+**应用启动过程**
+
+1. Launcher通过Binder进程间通信机制通知AMS，它要启动一个Activity
+2. AMS通过Binder进程间通信机制通知Launcher进入Paused状态
+3. Launcher通过Binder进程间通信机制通知AMS，它已经准备就绪进入Paused状态，于是AMS就创建一个新的线程，用来启动一个ActivityThread实例，即将要启动的Activity就是在这个ActivityThread实例中运行
+4. ActivityThread通过Binder进程间通信机制将一个ApplicationThread类型的Binder对象传递给AMS，以便以后AMS能够通过这个Binder对象和它进行通信
+5. AMS通过Binde进程间通信机制通知ActivityThread，现在一切准备就绪，它可以真正执行Activity的启动操作了
+
 
 ### Service
 
@@ -2183,7 +2195,7 @@ View的measure方法里对绘制过程做了一个优化，如果我们的子Vie
 
 
 
-### Fragment详解
+### 13. Fragment详解
 
 #### 生命周期
 
@@ -2242,6 +2254,72 @@ Fragment依附于Activity存在，因此与Activity之间的通信可以归纳�
 
 在onCreate(Bundle savedInstanceState)中判断savedInstanceState为空时在重建，当发生重建时，原本的数据如何保持？类似Activity，Fragment也有onSaveInstanceState方法，在此方法中进行保存数据，然后在onCreate或者onCreateView或者onActivityCreated进行恢复都可以。
 
+
+
+### 14. Json、XML
+
+Json是一种轻量级的数据交换格式，具有良好的可读和便于编写的特性。XML即扩展标记语言，用来标记电子文件使其具有结构性的标记语言，可以用来标记数据。定义数据类型，是一种允许用户对自己的标记语言进行定义的源语言。
+
+JSON在编码和解码上优于XML，并且数据体积更下，解析更快，与JavaScript交互更加方便，但是对数据的描述性较XML差。
+
+
+
+### 15. Assets目录与res目录的区别
+
+​	assets目录与res下的raw、drawable目录一样，也可用来存放资源文件，但它们三者区别如下：
+
+|             | assets   | res/raw   | res/drawable   |
+| ----------- | -------- | --------- | -------------- |
+| 获取资源方式      | 文件路径+文件名 | R.raw.xxx | R.drawable.xxx |
+| 是否被压缩       | false    | false     | true(失真压缩)     |
+| 能否获取子目录下的资源 | true     | false     | false          |
+
+res/raw和assets的区别：
+
+​	res/raw中的文件会被映射到R.java文件中，访问的时候直接使用资源ID即可，assets文件夹下的文件不会被映射到R文件中，访问的时候需要AssetManager类。
+
+​	res/raw不可以有目录结构，而assets则可以有目录结构，也就是assets目录下可以再建立文件夹。
+
+​	读取res/raw下的文件资源，通过以下方式获取输入流来进行写操作：
+
+```java
+InputStream is = getResources().openRawResource(R.id.filename);
+```
+
+​	读取assets下的文件资源，通过以下方式获取输入流进行写操作，使用AssetManager。
+
+注意：
+
+1. AssertManager中不能处理单个超过1M的文件，而raw没有这个限制
+2. assets文件夹是存放不进行编译加工的原生文件，即该文件夹里面的文件不会像xml、java文件被预编译，可以存放一些图片、html、js等等
+
+
+
+### 16. View视图绘制过程原理
+
+​	View视图绘制需要搞清楚两个问题，一个是从哪里开始绘制，一个是怎么绘制？
+
+从哪里开始绘制？我们平常使用Activity的时候，都会调用setContentView来设置布局文件，没错，视图绘制就是从这个方法开始。
+
+怎么绘制？
+
+在我们的Activity中调用了setContentView之后，会转而执行PhoneWindow的setContentView，在这个方法里面会判断我们存放内容的ViewGroup（这个ViewGroup可以是DecorView也可以是DecorView的子View）是否存在。不存在的话，则会创建一个DecorView处理，并且会创建出相应的窗体风格，存在的话则会删除原先的ViewGroup上面已有的View，接着会调用LayoutInflater的inflate方法以pull解析的方式将当前布局文件中存在的View通过addView的方式添加到ViewGroup上面来，接着在addView方法里面就会执行我们常见的invalidate方法了，这个方法不只是在View视图绘制的过程中经常用到，其实动画的实现原理也是不断的调用这个方法来实现视图不断重绘的，执行这个方法的时候会调用父View的invalidateChild方法，这个方法是属于ViewParent的，ViewGroup以及ViewRootImpl中都会他进行了实现，invalidateChild里面主要做的是就是通过do while循环一层一层计算出当前View的四个点所对应的矩阵在ViewRoot中所对应的位置，那么有了这个矩阵的位置之后最终都会执行ViewRootImpl的invalidateChildInParent方法，执行这个方法的时候首先会检查当前线程是不是主线程，因为我们要开始准备更新UI了，不是主线程的话是不允许更新UI的，接着就会执行scheduleTraversals方法了，这个方法会通过handler来执行doTraversal方法，在这个方法里面就见到了我们平常所熟悉的View视图绘制的起点方法performTraversals了。
+
+那么接下来就是真正的视图绘制流程了，大体上讲View的绘制流程经历了Measure测量、Layout布局以及Draw绘制的三个过程，具体来讲是从ViewRootImpl的performTraversals方法开始，首先执行的将是performMeasure方法，这个方法里面会传入两个MeasureSpec类型的参数，它在很大程度上决定了View的尺寸规格，对于DecorView来说宽高的MeasureSpec值的获取与窗口尺寸以及自身的LayoutParams有关，对于普通View来说其宽高的MeasureSpec值获取由父容器以及自身的LayoutParams属性共同决定，在performMeasure里面会执行measure方法，在measure方法里面会执行onMeasure方法，到这里Measure测量过程对View与ViewGroup来说是没有区别的，但是从onMeasure开始两者有差别了，因为View本身已经不存在子View了，所以他onMeasure方法将执行setMeasuredDimension方法，该方法会设置View的测量值，但是对于ViewGroup来说，因为它里面还存在着子View，那么我们就需要继续测量它里面的子View了，调用的方法是measureChild方法，该方法内部又会执行measure方法，而measure方法转而又会执行onMeasure方法，这样不断的递归进行下去，直到整个View树测量结束，这样performMeasure方法执行结束了。接着便是执行performLayout方法了，performMeasure只是测量出了View树中View的大小了，但是还不知道View的位置，所以也就出现了performLayout方法了，performLayout方法首先会执行layout方法，以确定View自身的位置，如果当前View是ViewGroup的话，则会执行onLayout方法。在onLayout方法里面又会递归的执行layout方法，直到当前遍历到的View不再是ViewGroup为止，这样整个layout布局过程就结束了。在View树中View的大小以及位置都确定之后，接下来就是真正的绘制View显示在界面的过程了，该过程首先从performDraw方法开始，performDraw首先会执行draw方法，在draw方法中首先绘制背景，接着调用onDraw方法绘制自己，如果当前View是ViewGroup的话，还要调用dispatchDraw方法绘制当前ViewGroup的子View，而dispatchDraw方法里面实际上是通过drawChild方法间接调用draw方法形成递归绘制整个View树，直到当前View不再是ViewGroup为止，这样整个View的绘制过程就结束了。
+
+### 17. 解决滑动冲突的方式？
+
+​	在自定义View的过程中经常会遇到滑动冲突问题，一般滑动冲突的类型有三种：（1）外部View滑动方向和内部View滑动方向不一致；（2）外部View滑动方向和内部View滑动方向一致；（3）上述两种情况的嵌套
+
+​	一般解决滑动冲突都是利用事件分发机制，有两种方式即外部拦截法和内部拦截法：
+
+**外部拦截法：**
+
+实现思路是事件首先是通过父容器的拦截处理，如果父容器不需要该事件，则不拦截，将事件传递到子View上面，如果父容器决定拦截的话，则在父容器的onTouchEvent里面直接处理该事件，这种方法符合事件分发机制；具体实现是修改父容器的onInterceptTouchEvent方法，在达到某一条件的时候，让该方法直接返回true，就可以把事件拦截下来进而调用自己的onTouchEvent方法来处理，但是有一点需要注意的是，如果想让子View能够收到事件，我们需要在onInterceptTouchEvent方法里面判断是DOWN事件的话，就返回false，这样后续的MOVE以及UP事件才有机会传递到子View上面，如果你直接在onInterceptTouchEvent方法里面DOWN情况下返回了true，那么后续的MOVE以及UP事件酱由当前View的onTouchEvent处理了，这样的拦截根本没有意义的，拦截只是在满足一定条件下才会拦截，并不是所有情况下都要拦截。
+
+**内部拦截法：**
+
+实现思路是
 
 ### 数据结构
 
@@ -2383,3 +2461,25 @@ public int getLength(Node head){
 **链表添加一个元素**
 
 链表的插入操作分为头插法、尾插法和随机节点插入法。当然数据结构讲的时候也是针对一个已经构造好的（保存了链表头部节点和尾部节点引用）
+
+
+
+## 计算机网络
+
+### 1. TCP 和 UDP 的区别
+
+TCP：
+
+​	传输控制协议，提供的是面向连接、可靠的字节流服务，传输数据前经过三次握手建立连接，保证数据传输的可靠性，但效率比较低，一般用于数据传输安全性较高的场合。
+
+UPD：
+
+​	用户数据报协议，是一个简单的面向数据报的运输层协议，面向无连接。UDP不提供可靠性，数据传输可能发生错序，丢包，但效率1较高，一般用于对于实时性要求较高的场合。
+
+**总结：**
+
+* UDP在传送数据之前不需要先建立连接。远程主机运输层在收到UDP报文后，不需要给出任何确认。因此UDP不提供可靠交付，但是效率高。TCP则提供面向连接的服务，在传送数据之前必须先建立连接，数据传送结束后要释放连接。TCP要提供可靠的、面向连接的运输服务，因此不可避免的增加了许多的开销，如确认、流量控制等等。
+* TCP和UDP在发送报文时所采用的方式完全不同。TCP并不关心进程一次把多长的报文发送到TCP的缓存中，而是根据对方给出的窗口值和当前网络拥塞程度决定一个报文段包含多少字节，而UDP发送报文长度是应用进程给出的。如果应用进程传送到TCP缓存的数据块太长，TCP就划分短一些在传送。若过短也可以等待积累足够多的字节后再构成报文段发送出去。
+* UDP程序结构比较简单，它的首部最少为8个字节而TCP最少为20字节。
+* UDP不保证数据的顺序结构，而TCP必须保证数据的顺序结构。
+* TCP面向字节流，实际上是TCP把数据看成一连串无结构的字节流；UDP是面向报文的，UDP没有阻塞控制，因此网络出现阻塞不会使源主机的发送速率降低。
