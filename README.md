@@ -699,7 +699,353 @@ Annotation 的行为十分类似 public、final 这样的修饰符。每个 Anno
 
 参考自：[https://www.jianshu.com/p/8da24b7cf443](https://www.jianshu.com/p/8da24b7cf443)
 
+从JDK5开始，Java增加了Annotation，注解是代码里的特殊标记，这些标记可以在编译、类加载、运行时被读取，并执行相应的处理。通过使用Annotation，开发人员可以在不改变原有逻辑的情况下，在源文件中嵌入一些补充的信息。
 
+Annotation提供了一种为程序元素（包、类、构造器、方法、成员变量、参数、局部变量）设置元数据的方法。Annotation不能运行，**它只有成员变量，没有方法**。Annotation跟public、final修饰符一样，都是程序元素的一部分，Annotation不能作为一个程序元素使用。
+
+#### 1. 定义Annotation
+
+定义新的Annotation类型使用@interface关键字（在原有interface关键字前增加@符合），例如：
+
+```java
+//定义注解
+public @interface Test{
+}
+//使用注解
+@Test
+public class MyClass{
+....
+}
+```
+
+**1.1 成员变量**
+
+Annotation只有成员变量，没有方法。Annotation的成员变量在定义中以“无形参的方法”形式声明，其方法名定义了该成员变量的名字，其返回值定义了该成员变量的类型。例如：
+
+```java
+//定义注解
+public @interface MyTag{
+    string name();
+    int age();
+  	string id() default 0;
+}
+//使用注解
+public class Test{
+    @MyTag(name="红薯"，age=30)
+    public void info(){
+    ......
+    }
+}
+```
+
+一旦在Annotation里定义了成员变量后，使用该Annotation时就应该为该Annotation的成员变量指定值。
+
+也可以在定义Annotation的成员变量时，为其指定默认值，指定成员变量默认值使用default关键字。
+
+根据Annotation是否包含了成员变量，可以把Annotation分为以下两类：
+
+* 标记Annotation
+
+  没有成员变量的Annotation被称为标记，这种Annotation仅用自身的存在与否来为我们提供信息，例如@override等
+
+* 元数据Annotation
+
+  包含成员变量的Annotation。因为它可以接收更多的元数据，因此被称为元数据Annotation。
+
+**1.2 元注解**
+
+在定义Annotation时，也可以使用JDK提供的元注解来修饰Annotation定义。JDK提供了如下四个元注解（注解的注解，不是上诉的“元数据”）
+
+* @Retention
+* @Target
+* @Documented
+* @Inherited
+
+**1.2.1 @Retention**
+
+用于指定Annotation可以保留多长时间。
+
+@Retention包含一个名为“value”的成员变量，该value成员变量是RetentionPolicy枚举类型。使用@Retention时，必须为其value指定值，value成员变量的值只能是如下三个：
+
+* RetentionPolicy.SOURCE
+
+  Annotation只保留在源代码中，编译器编译时，直接丢弃这种Annotation
+
+* RetentionPolicy.CLASS
+
+  编译器会把Annotation记录在class文件中，当运行Java程序时，JVM中不再保留该Annotation
+
+* RetentionPolicy.RUNTIME
+
+  编译器把Annotation记录在class文件中，当运行Java程序时，JVM会保留该Annotation，程序可以通过反射获取该Annotation的信息。
+
+```
+//name=value形式
+//@Retention(value=RetentionPolicy.RUNTIME)
+
+//直接指定
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MyTag{
+	String name() default "我兰";
+}
+```
+
+**1.2.2 @Target**
+
+@Target指定Annotation用于修饰哪些程序元素。@Target也包含一个名为“value”的成员变量，该value成员变量类型为ElementType[]，同样为枚举类型，值有以下几个：
+
+* ElementType.TYPE   能修饰类、接口或枚举类型
+* ElementType.FIELD   能修饰成员变量
+* ElementType.METHOD   能修饰方法
+* ElementType.PARAMETER   能修饰参数
+* ElementType.CONSTRUCTOR   能修饰构造器
+* ElementType.LOCAL_VARIABLE   能够修饰局部变量
+* ElementType.ANNOTATION_TYPE   能修饰注解
+* ElementType.PACKAGE   能修饰包
+
+```java
+//单个ElementType
+@Target(ElementType.FIELD)
+public @interface AnnTest {
+	String name() default "sunchp";
+}
+//多个ElementType
+@Target({ ElementType.FIELD, ElementType.METHOD })
+public @interface AnnTest {
+	String name() default "sunchp";
+}
+```
+
+**1.2.3 @Documented**
+
+如果定义注解时，使用了@Documented修饰定义，则在用javadoc命令生成API文档后，所有使用该注解修饰的程序元素，将会包含该注解的说明。
+
+**1.2.4 @Inherited**
+
+指定Annotation具有继承性。
+
+
+
+**1.3 基本Annotation**
+
+* @Override
+
+  限定重写父类方法。对于子类中被@Override修饰的方法，如果存在对应的被重写的父类方法，则正确；如果不存在，则报错。@Override只能作用于方法，不能作用于其他程序元素。
+
+* @Deprecated
+
+  用于表示某个程序元素（类、方法等等）已过时，如果使用被@Deprecated修饰的类或方法等，编译器会发出警号。
+
+* @SuppressWarning
+
+  抑制编译器警号。指示被@SuppressWarning修饰的程序元素（以及该程序元素中的所有子元素，例如类以及该类中的方法...）取消显示指定的编译器警告，例如，常见的@SuppressWarning (value="unchecked")
+
+* @SafeVarargs
+
+  是JDK7专门为抑制“堆污染”警号提供的。
+
+#### 2. 提取Annotation信息（反射）
+
+当开发者使用了Annotation修饰了类、方法、Field等成员之后，这些Annotation不会自己生效，必须由开发者提供相应的代码来提取并处理Annotation信息，这些处理和提取Annotation的代码统称为APT（Annotation Processing Tool）。
+
+JDK主要提供了两个类，来完成Annotation的提取：
+
+* java.lang.annotation.Annotation
+
+  这个接口是所有Annotation类型的父接口
+
+* java.lang.reflect.AnnotatedElement
+
+  该接口代表程序中被注解的程序元素
+
+**2.1 java.lang.annotation.Annotation**
+
+该接口源码：
+
+```java
+package java.lang.annotation;
+
+public interface Annotation {
+
+    boolean equals(Object obj);
+
+    int hashCode();
+
+    String toString();
+
+    Class<? extends Annotation> annotationType();
+}
+```
+
+其中主要方法是annotationType()，用于返回该注解的java.lang.Class
+
+**2.2 java.lang.reflect.AnnotatedElement**
+
+接口源码：
+
+```java
+package java.lang.reflect;
+
+import java.lang.annotation.Annotation;
+
+public interface AnnotatedElement {
+
+  	//判断该程序元素上是否存在指定类型的注解，如果存在返回true，否则false
+    boolean isAnnotationPresent(Class<? extends Annotation> annotationClass);
+  
+	//返回该程序元素上存在的指定类型的注解，如果该类型的注解不存在，则返回null
+    <T extends Annotation> T getAnnotation(Class<T> annotationClass);
+
+  	//返回该程序元素上存在的所有注解
+    Annotation[] getAnnotations();
+
+    Annotation[] getDeclaredAnnotations();
+}
+```
+
+AnnotatedElement接口是所有程序元素（例如java.lang.Class、java.lang.reflect.Method、java.lang.reflect.Constructor等）的父接口。所以程序通过反射获取某个类的AnnotatedElement对象后，就可以调用该对象的isAnnotationPresent()、getAnnotation()等方法来访问注解信息。
+
+**为了获取注解信息，必须使用反射知识。**
+
+注：如果想要在运行时获取注解信息，在定义注解的时候，该注解必须要使用@Retention(RetentionPolicy.RUNTIME)修饰。
+
+**2.3 示例**
+
+**2.3.1 标记Annotation**
+
+```java
+//定义注解
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface MyTag {
+
+}
+//注解处理
+class ProcessTool {
+    static void process(String clazz) {
+        Class targetClass = null;
+        try {
+            targetClass = Class.forName(clazz);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        assert targetClass != null;
+        for (Method method : targetClass.getMethods()) {
+            if (method.isAnnotationPresent(MyTag.class)) {
+                System.out.println("被MyTag注解修饰的方法名：" + method.getName());
+            } else {
+                System.out.println("没有被MyTag注解修饰的方法名：" + method.getName());
+            }
+        }
+    }
+}
+//测试类
+public class TagTest {
+
+    @MyTag
+    public static void m1() {
+
+    }
+
+    public static void m2() {
+
+    }
+
+    public static void main(String[] args) {
+        ProcessTool.process("annotation.TagTest");
+    }
+}
+//输出
+没有被MyTag注解修饰的方法名：main
+被MyTag注解修饰的方法名：m1
+没有被MyTag注解修饰的方法名：m2
+没有被MyTag注解修饰的方法名：wait
+没有被MyTag注解修饰的方法名：wait
+没有被MyTag注解修饰的方法名：wait
+没有被MyTag注解修饰的方法名：equals
+没有被MyTag注解修饰的方法名：toString
+没有被MyTag注解修饰的方法名：hashCode
+没有被MyTag注解修饰的方法名：getClass
+没有被MyTag注解修饰的方法名：notify
+没有被MyTag注解修饰的方法名：notifyAll
+```
+
+**2.3.2 元数据Annotation**
+
+```java
+//定义注解
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface MyTag {
+    String name() default "Omooo";
+
+    int age() default 21;
+}
+//注解处理
+class ProcessTool {
+    static void process(String clazz) {
+        Class targetClass = null;
+        try {
+            targetClass = Class.forName(clazz);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        assert targetClass != null;
+        for (Method method : targetClass.getMethods()) {
+            if (method.isAnnotationPresent(MyTag.class)) {
+                MyTag tag = method.getAnnotation(MyTag.class);
+                System.out.println("方法：" + method.getName() + " 的注解内容为：" + tag.name() + "  " + tag.age());
+            }
+        }
+    }
+}
+//测试类
+public class TagTest {
+
+    @MyTag
+    public static void m1() {
+
+    }
+
+    @MyTag(name = "当当猫", age = 20)
+    public static void m2() {
+
+    }
+
+    public static void main(String[] args) {
+        ProcessTool.process("annotation.TagTest");
+    }
+}
+//输出
+方法：m1 的注解内容为：Omooo  21
+方法：m2 的注解内容为：当当猫  20
+```
+
+#### 3. 注解本质
+
+* 注解实质上会被编译器编译为接口，并且继承java.lang.annotation.Annotation接口
+* 注解的成员变量会被编译器编译成同名的抽象方法
+* 根据Java的class文件规范，class文件中会在程序元素的属性位置记录注解信息。
+
+#### 4. 注解的意义
+
+1. 为编译器提供辅助信息
+
+   Annotation可以为编译器提供额外的信息，以便于检测错误，抑制警告等。
+
+2. 编译源代码时进行额外操作
+
+   软件工具可以通过处理Annotation信息来生成源代码，xml文件等等。
+
+3. 运行时处理
+
+   有一些Annotation甚至可以在程序运行时被检测、使用。
+
+
+总之，注解是一种元数据，起到了“描述、配置”的作用。
+
+
+引自：[http://www.open-open.com/lib/view/open1423558996951.html](http://www.open-open.com/lib/view/open1423558996951.html)
 
 ### 12. 说说你对依赖注入的理解
 
@@ -2320,6 +2666,99 @@ InputStream is = getResources().openRawResource(R.id.filename);
 **内部拦截法：**
 
 实现思路是
+
+
+
+### 18. APP Build过程
+
+Android Studio点击build按钮之后，AS就会编译整个项目，并将apk安装到手机上，这个过程就是Android工程编译打包过程。主要的流程是：
+
+编译 --> DEX --> 打包 --> 签名
+
+**APK构建概述**
+![](https://upload-images.jianshu.io/upload_images/2707477-39b6ba4609909c3a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/700)
+
+主要有两个过程：
+
+* 编译过程
+
+  输入是本工程的文件以及依赖的各种库文件
+
+  输出是dex文件和编译后的资源文件
+
+* 打包过程
+
+  配合Keystore对上述的输出进行签名对齐，生成最终的apk文件
+
+**APK构建步骤详解**
+![](https://upload-images.jianshu.io/upload_images/2707477-43f77a6cdf804a59.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/536)
+
+主要分为六个步骤：
+
+1. 通过aapt打包res资源文件，生成R.java文件、resource.arsc和res文件（二进制&非二进制如res/raw和pic保持原样）
+2. 处理.aidl文件，生成对应的Java接口文件
+3. 通过Java Compiler编译R.java、Java接口文件、Java源文件，生成.class文件
+4. 通过dex命令，将.class文件和第三方库中的.class文件处理生成classes.dex
+5. 通过apkbuilder工具，将aapt生成的resource.arsc和res文件、assets文件和classes.dex一起打包生成apk
+6. 通过Jarsigner工具，对上面的apk进行debug或release签名
+7. 通过zipalign工具，将签名后的apk进行对齐处理
+
+参考自：
+
+[https://www.jianshu.com/p/e86aadcb19e0](https://www.jianshu.com/p/e86aadcb19e0)
+
+[http://mouxuejie.com/blog/2016-08-04/build-and-package-flow-introduction/](http://mouxuejie.com/blog/2016-08-04/build-and-package-flow-introduction/)
+
+
+
+### 19. Android利用scheme协议进行跳转
+
+scheme是一种页面跳转协议。
+
+通过定义自己的scheme协议，可以非常方便的跳转App中的各个页面；
+
+通过scheme协议，服务器可以定制化告诉App跳转到App内部页面。
+
+**Scheme协议在Android中的使用场景**
+
+* H5跳转到native页面
+* 客户端获取push消息中后，点击消息跳转到App内部页面
+* App根据URL跳转到另外一个App指定页面
+
+**示例**
+注册 SchemeActivity：
+
+```xml
+		<activity android:name=".SchemeActivity">
+            <intent-filter>
+              	//配置协议
+                <data android:scheme="scheme" android:host="mtime" android:path="/goodsDetail"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+            </intent-filter>
+        </activity>
+```
+
+在MainActivity里通过以下代码跳转到SchemeActivty：
+
+```java
+String url = "scheme://mtime/goodsDetail?goodsId=2333";
+Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+startActivity(intent);
+```
+
+然后我们可以在SchemeActivity获取到请求的参数等等信息：
+
+```java
+Uri uri = getIntent().getData();
+assert uri != null;
+String host = uri.getHost();
+String path = uri.getPath();
+String query = uri.getQuery();
+String param = uri.getQueryParameter("goodsId");
+Toast.makeText(this, host + "  " + path + "  " + query + "  " + param, Toast.LENGTH_SHORT).show();
+```
 
 ### 数据结构
 
