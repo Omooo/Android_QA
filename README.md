@@ -1144,6 +1144,75 @@ String被广泛的使用在其他类中充当参数，如果字符串可变，�
 
 
 
+### 17. 为什么Java里的匿名内部类只能访问final修饰的外部变量？
+
+​	因为匿名内部类最终会被编译成一个单独的类，而被该类使用的变量会以构造函数参数的形式传递给该类。如果变量不定义为final的，参数在匿名内部类中可以被修改，进而造成和外部的变量不一致的问题，为了避免这种不一致的情况，规定匿名内部类只能访问final修饰的外部变量。
+
+
+
+### 18. Synchronized
+
+​	synchronized，是Java中用于解决并发情况下数据同步访问的一个很重要的关键字。当我们想要保证一个共享资源在同一个时间只会被一个线程访问到时，我们可以在代码中使用synchronized关键字对类或者对象加锁。
+
+在Java中，synchronized有两种使用方式，同步方法和同步代码块。
+
+对于同步方法，JVM采用ACC_SYNCHRONIZED标记符来实现同步。对于同步代码块，JVM采用monitorenter、monitorexit 两个指令来实现同步。
+
+**同步方法**
+方法级的同步是隐式的，同步方法的常量池中会有一个ACC_SYNCHRNZED 标志，当某个线程要访问某个方法的时候，会检查是否有 ACC_SYNCHORIZED ，如果有设置，则需要先获得监视器锁，然后开始执行方法，方法执行之后在释放监视器锁。这时如果其他线程来请求执行方法，会因为无法获得监视器锁而被阻断住。值得注意的是，如果方法在执行过程中发生了异常，并且方法内部并没有处理该异常，那么异常被抛到方法外面之前监视器锁会被自动释放。
+
+**同步代码块**
+同步代码块使用monitorenter和monitorexit两个指令实现。可以把执行monitorenter指令理解为加锁，执行monitorexit理解为释放锁。每个对象维护着一个记录被锁次数的计数器，未被锁定的对象的该计数器为0，当一个线程获得锁（执行monitorenter）后，该计数器自增变为1，当同一个线程再次获得该对象的锁的时候，计数器再次自增。当同一个线程释放锁（执行monitorexit指令）的时候，计数器在自减。当计数器为0的时候，锁将被释放，其他线程便可以获得锁。
+
+**synchronized与原子性**
+原子性是指一个操作是不可中断的，要全部执行完成，要不就都不执行。
+
+线程是CPU调度的基本单位，CPU有时间片的概念，会根据不同的调度算法进行线程调度。当一个线程获得时间片之后开始执行，在时间片耗尽之后，就会失去CPU使用权。所以在多线程场景下，由于时间片在线程间轮换，就会发生原子性问题。
+
+在Java中，为了保证原子性，提供了两个高级的字节码指令 monitorenter 和 monitorexit 。前面介绍过，这两个字节码指令，在Java中对应的关键字就是 synchronized。
+
+通过 monitorenter 和 monitorexit 指令，可以保证被 synchronized修饰的代码在同一时间只能被一个线程访问，在锁未释放之前，无法被其他线程访问到。因此，在Java中可以使用 synchronized 来保证方法和代码块内的操作是原子性的。
+
+线程一在执行monitorenter指令的时候，会对Monitor进行加锁，加锁后其他线程无法获得锁，除非线程一主动解锁。即使在执行过程中，由于某种原因，比如CPU时间片用完，线程一放弃了CPU，但是，他并没有进行解锁，而由于 synchorized 的锁是可以重入的，下一个时间片还是只能被他自己获取到，还是会继续执行代码，直到所有代码执行完，这就保证了原子性。
+
+**synchroized与可见性**
+可见性是指当多个线程访问同一个变量时，一个线程修改了这个变量的值，其他线程能够立即看得到修改的值。
+
+Java内存模型规定了所有的变量都存储在主内存中，每条线程还有自己的工作内存，线程的工作内存保存了该线程中是用到的变量的主内存副本拷贝，线程对变量的所有操作都必须在工作内存中进行，而不能直接读写主内存。不同的线程之后也无法直接访问对方工作内存中的变量，线程间变量的传递均需要自己的工作内存和主内存之间进行数据同步进行。所以，就可能出现线程一修改了某个变量的值，但线程二不可见的情况。
+
+前面我们介绍过，被 synchronized 修饰的代码，在开始执行时会加锁，执行完成后会进行解锁。而为了保证可见性，有一条规则是专业的：对一个变量解锁之前，必须先把变量同步到主内存中。这样解锁后，后续线程就可以访问到被修改后的值。
+
+所以，被 synchronized 关键字锁住的对象，其值是具有可见性的。
+
+**synchronized与有序性**
+有序性即程序执行的顺序按照代码的先后顺序执行。
+
+除了引入了时间片以外，由于处理器优化和指令重排，CPU还可能对输入代码进行乱序执行，这就可能存在有序性问题。
+
+这里需要注意的是，synchronized 是无法禁止指令重排和处理器优化的，也就是说，synchronized 无法避免上述提到的问题。那么为什么还说synchronized 也提供了有序性保证呢？
+
+这就要把有序性的概念扩展一下了，Java程序中天然的有序性可以总结为一句话：如果在本线程内观察，所有操作都是天然有序的，如果在一个线程中观察另外一个线程，所有的操作都是无序的。
+
+以上这句话也是《深入理解Java虚拟机》中的原句，但是怎么理解呢？这其实和 as-if-serial语义有关。
+
+as-if-serial 语义的意思是指：不管怎么重排序（编译器和处理器为了提高并行度），单线程程序的执行结果都不能被改变，编译器和处理器无论如何优化，都必须遵守 as-if-serial语义。
+
+简单来说，as-if-serial语义保证了单线程中，指令重排是有一定限制的，而只要编译器和处理器都遵守这个语义，那么就可以认为单线程程序是按照顺序执行的，当然，实际上还是有重排，只不过我们无需关心这种重排的干扰。
+
+所以说，由于synchronized修饰的代码，同一时间只能被同一个线程访问，那么也就是单线程执行，所以可以保证其有序性。
+
+**synchronized与锁优化**
+
+无论是ACC_SYNCHORIZED还是monitorenter、monitorexit都是基于Monitor实现的，在Java虚拟机（HotSpot）中，Monitor是基于C++实现的，由ObjectMonitor实现。
+
+ObjectMonitor类中提供了几个方法，如 enter、exit、wait、notify、notifyAll 等。sychronized 加锁的原理，会调用 objectMonitor的enter方法，解锁的时候会调用 exit 方法。事实上，只有在JDK1.6之前，synchronized的实现才会直接调用ObjectMonitor的enter和exit，这种锁被称之为重量级锁。为什么说这种方式操作锁很重呢？
+
+Java的线程是映射到操作系统原生线程之上的，如果要阻塞或唤醒一个线程就需要操作系统的帮忙，这就是要从用户态转换为核心态，因此状态转换需要花费很多的处理器时间，对于代码简单的同步块，状态转换消耗的时间有可能比用户代码执行的时间还要长，所以说synchroized是java语言中一个重量级的操纵。
+
+所以，在JDK1.6中出现对锁进行了很多的优化，进而出现了轻量级锁、偏向锁、锁消除，适应性自旋锁等等，这些操作都是为了在线程之间更高效的共享数据，解决竞争问题。
+
+
+
 ## Java 部分（三）数据结构
 
 ### 1. 常用数据结构简介
@@ -2653,6 +2722,14 @@ InputStream is = getResources().openRawResource(R.id.filename);
 
 那么接下来就是真正的视图绘制流程了，大体上讲View的绘制流程经历了Measure测量、Layout布局以及Draw绘制的三个过程，具体来讲是从ViewRootImpl的performTraversals方法开始，首先执行的将是performMeasure方法，这个方法里面会传入两个MeasureSpec类型的参数，它在很大程度上决定了View的尺寸规格，对于DecorView来说宽高的MeasureSpec值的获取与窗口尺寸以及自身的LayoutParams有关，对于普通View来说其宽高的MeasureSpec值获取由父容器以及自身的LayoutParams属性共同决定，在performMeasure里面会执行measure方法，在measure方法里面会执行onMeasure方法，到这里Measure测量过程对View与ViewGroup来说是没有区别的，但是从onMeasure开始两者有差别了，因为View本身已经不存在子View了，所以他onMeasure方法将执行setMeasuredDimension方法，该方法会设置View的测量值，但是对于ViewGroup来说，因为它里面还存在着子View，那么我们就需要继续测量它里面的子View了，调用的方法是measureChild方法，该方法内部又会执行measure方法，而measure方法转而又会执行onMeasure方法，这样不断的递归进行下去，直到整个View树测量结束，这样performMeasure方法执行结束了。接着便是执行performLayout方法了，performMeasure只是测量出了View树中View的大小了，但是还不知道View的位置，所以也就出现了performLayout方法了，performLayout方法首先会执行layout方法，以确定View自身的位置，如果当前View是ViewGroup的话，则会执行onLayout方法。在onLayout方法里面又会递归的执行layout方法，直到当前遍历到的View不再是ViewGroup为止，这样整个layout布局过程就结束了。在View树中View的大小以及位置都确定之后，接下来就是真正的绘制View显示在界面的过程了，该过程首先从performDraw方法开始，performDraw首先会执行draw方法，在draw方法中首先绘制背景，接着调用onDraw方法绘制自己，如果当前View是ViewGroup的话，还要调用dispatchDraw方法绘制当前ViewGroup的子View，而dispatchDraw方法里面实际上是通过drawChild方法间接调用draw方法形成递归绘制整个View树，直到当前View不再是ViewGroup为止，这样整个View的绘制过程就结束了。
 
+总结：
+
+* ViewRootImpl会调用performTraversals()，其内部会调用performMeasure()、performLayout、performDraw
+* performMeasure会调用最外层的ViewGroup的measure() --> onMeasure() ，ViewGroup的onMeasure()是抽象方法，但其提供了measureChildren()，这之中会遍历子View然后循环调用measureChild()，传入MeasureSpec参数，然后调用子View的measure()到View的onMeasure() -->setMeasureDimension(getDefaultSize(),getDefaultSize())，getDefaultSize()默然返回measureSpec的测量数值，所以继承View进行自定义的wrap_content需要重写。
+* performLayout()会调用最外层的ViewGroup的layout(l,t,r,b)，本View在其中使用setFrame()设置本View的四个顶点位置。在onLayout(抽象方法)中确定子View的位置，如LinearLayout会遍历子View，循环调用setChildFrame() --> 子View.layout()
+* performDraw()会调用最外层的ViewGroup的draw()方法，其中会先后调用background.draw()绘制背景，onDraw(绘制自己)，dispatchDraw(绘制子View)、onDrawScrollBars(绘制装饰)
+* MeasureSpec由两位SpecMode(UNSPECIFIED、EXACTLY(对于精确值和match_parent)、AL_MOST(对应warp_content))和三十位SpecSize组成一个int，DecorView的MeasureSpec由窗口大小和其LayoutParams决定，其他View有父View的MeasureSpec和本View的LayoutParams决定。ViewGroup中有getChildMeasureSpec()来获取子View的MeasureSpec。
+
 ### 17. 解决滑动冲突的方式？
 
 ​	在自定义View的过程中经常会遇到滑动冲突问题，一般滑动冲突的类型有三种：（1）外部View滑动方向和内部View滑动方向不一致；（2）外部View滑动方向和内部View滑动方向一致；（3）上述两种情况的嵌套
@@ -3084,3 +3161,11 @@ UPD：
 
 ### Http1.1和Http1.0及2.0的区别
 
+**HTTP1.1与1.0的区别**
+
+* 长连接
+  HTTP1.0协议使用非持久连接，即在非持久连接下，一个TCP连接只传输一个Web对象。
+
+  HTTP1.1支持持久连接，也就是说长连接，在一个TCP连接上可以传送多个HTTP请求和响应，减少了建立和关闭连接的消耗和延迟。
+
+  一个包含有许多图像的网页文件的多个请求和应答可以在一个连接中传输，但每个单独的网页文件的请求和应答仍然需要使用各自的连接。HTTP1.1还允许客户端不要等待上一次请求结果返回，就可以发出下一次请求，但服务器端必须按照接收到客户端请求的先后顺序依次回送响应结果，
