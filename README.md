@@ -1211,6 +1211,48 @@ Java的线程是映射到操作系统原生线程之上的，如果要阻塞或�
 
 所以，在JDK1.6中出现对锁进行了很多的优化，进而出现了轻量级锁、偏向锁、锁消除，适应性自旋锁等等，这些操作都是为了在线程之间更高效的共享数据，解决竞争问题。
 
+### 19. volatile
+
+**volatile用法**
+volatile通常被比喻成轻量级的synchronized，也是Java并发编程中比较重要的一个关键字，和synchronized不同，volatile是一个变量修饰符，只能用来修饰变量，无法修饰方法以及代码块。
+
+volatile的用法比较简单，只需要在声明一个可能被多线程同时访问的变量时，使用volatile修饰就可以了。
+
+**volatile原理**
+为了提高处理器的执行速度，在处理器和内存之间增加了多级缓存来提升，但是由于引入了多级缓存，就存在缓存数据不一致的问题。
+
+但是，对于volatile变量，当对volatile变量进行写操作的时候，JVM会向处理器发送一条Lock前缀的指令，将这个缓存中的变量回写到系统主存中。
+
+但是就算回写内存，如果其他处理器缓存的值还是旧的，在执行计算操作就会有问题，所以在多处理器下，为了保证各个处理器的缓存是一致的，就会实现缓存一致性协议。
+
+**缓存一致性协议：**
+
+每个处理器通过嗅探在总线上传播的数据来检测自己缓存的信息是不是过期了，当处理器发现自己缓存行对应的内存地址被修改了，就会将当前处理器的缓存行设置为无效状态，当处理器要对这个数据进行修改操作的时候，会强制重新从系统内存里把数据读到处理器缓存里。
+
+所以，如果一个变量被volatile所修饰的话，在每次数据变化之后，其值都会被强制刷新入主存。而其他处理器的缓存由于遵守了缓存一致性协议，也会把这个变量的值从主存加载到自己的缓存中，这就保证了一个volatile修饰的变量在多个缓存中是可见的。
+
+**volatile与可见性**
+可见性是指当多个线程访问同一个变量时，一个线程修改了这个变量的值，其他线程也能够立即看到修改的值。
+
+前面在关于volatile原理的时候讲过，Java中的volatile关键字提供了一个功能，那就是被修饰的变量在被修改后可以立即同步到主存中，被其修饰的变量在每次使用之前都是从主内存中刷新。因此，可以使用volatile来保证多线程操作时变量的可见性。
+
+**volatile与有序性**
+volatile禁止指令重排优化，这就保证了代码的程序会严格按照代码的先后顺序执行，这就保证了有序性。
+
+**volatile与原子性**
+在上面介绍synchronized的时候，提到过，为了保证原子性，需要通过字节码指令monitorenter和monitorexit，但是volatile和这两个指令没有任何关系。
+
+**所以，volatile是不能保证原子性的。**
+
+在以下两个场景中可以使用volatile替代synchronized：
+
+1. 运算结果并不依赖变量的当前值，或者能够确保只有单一的线程会修改变量的值
+2. 变量不需要与其他状态变量共同参与不变约束
+
+除了以上场景，都需要使用其他方式来保证原子性，如synchronized或者concurrent包。
+
+synchronized可以保证原子性、有序性和可见性，而volatile只能保证有序性和可见性。
+
 
 
 ## Java 部分（三）数据结构
@@ -1420,15 +1462,77 @@ semaphore.release();//释放一个信号
 
 
 
-### 17. Synchronized 的用法
+### 17. 说说线程池
 
+**线程池的好处**
 
+1. 线程池的重用
 
-### 18. Synchronized 的原理
+   线程的创建和销毁的开销是巨大的，而通过线程池的重用大大减少了这些不必要的开销，当然既然少了那么多消耗内存的开销，其线程执行速度也是突飞猛进的提升。
 
+2. 控制线程池的并发数
 
+   控制线程池的并发数可以有效地避免大量的线程争夺CPU资源而造成阻塞。
 
+3. 线程池可以对线程进行管理
 
+   线程池可以提供定时、定期、单线程、并发数控制等功能。
+
+**线程池的详解**
+
+1. ThreadPoolExecutor
+
+   ```java
+
+   public ThreadPoolExecutor(int corePoolSize,  
+                                 int maximumPoolSize,  
+                                 long keepAliveTime,  
+                                 TimeUnit unit,  
+                                 BlockingQueue<Runnable> workQueue,  
+                                 ThreadFactory threadFactory,  
+                                 RejectedExecutionHandler handler)
+   ```
+
+   这里是七个参数（更多的是用五个参数的构造方法）。
+
+   **corePoolSize**：线程池中核心线程的数量。
+
+   **maxinumPoolSize**：线程池中最大的线程数量。
+
+   **keepAliveTime**：非核心线程的超时时长，当系统中非核心线程闲置时间超过keepAliveTime之后，则会被回收。如果ThreadPoolExecutor的allowCoreThreadTimeOut属性设置为true，则该参数也表示核心线程的超时时长。
+
+   **unit**：第三个参数的单位，有毫秒、秒、分等等。
+
+   **workQueue**：线程池中的任务队列，该队列主要用来存储已经被提交但尚未执行的任务。存储在这里的任务是由ThreadPoolExecutor的execute方法提交来的。
+
+   threadFactory：为线程池提供创建新线程的功能，这个我们一般使用默认即可。
+
+   **handler**：拒绝策略，当线程无法执行新任务（一般是由于线程池中的线程数量已经达到最大数或者线程池关闭导致的）。默认情况下，当线程池无法处理新线程时，会抛出一个RejectedExecutionException。
+
+   有以下：
+
+   * 当currentSize < corePoolSize 时，直接启动一个核心线程并执行任务
+   * 当currentSize >= corePoolSize，并且 workQueue 未满时，添加进来的任务会被安排到workQueue中等待执行
+   * 当workQueue已满，但是currentSize < maxinumPoolSize 时，会立即开启一个非核心线程来执行任务
+   * 当 currentSize >= corePoolSize、workQueue已满，并且currentSize > maxinumPoolSize 时，调用handler默认会抛出异常
+
+2. 其他线程池
+
+   1. FixedThreadPool
+
+      有固定数量线程的线程池，其中corePoolSize = maxinumPoolSize，且keepAliveTime为0，适合线程稳定的场所。
+
+   2. SingleThreadPool
+
+      corePoolSize = maxinumPoolSzie = 1 且 keepAliveTime 为0，适合线程同步操作的场所。
+
+   3. CachedThreadPool
+
+      corePoolSize = 0，maximunPoolSize = Integer.MAX_VALUE（2的32次方-1）。
+
+   4. ScheduledThreadPool
+
+      是一个具有定时定期执行任务功能的线程池。
 
 ## Android 部分（一）基础知识点
 
