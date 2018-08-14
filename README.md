@@ -3503,6 +3503,95 @@ public class DrawBoardView extends SurfaceView implements SurfaceHolder.Callback
 ```
 
 
+
+### 22. HandlerThread
+
+HandlerThread继承了Thread，所以它本质上是一个Thread，与普通Thread的区别在于，它不仅建立了一个线程，并且创立了消息队列，有自己的looper，可以让我们在自己的线程中分发和处理消息，并对外提供自己这个Looper对象的get方法。
+
+HandlerThread自带的Looper使它可以通过消息队列，来重复使用当前的线程，节省系统资源开销。这是他的优点也是缺点，每一个任务队列都是以队列的方式逐个被执行到，一旦队列中某个任务执行时间过长，那么就会导致后续的任务都会被延时执行。
+
+**使用步骤：**
+
+1. 创建HandlerThread实例并启动该线程
+
+   ```java
+   HandlerThread handlerThread = new HandlerThread("myThread");
+   handlerThread.start();
+   ```
+
+2. 构造循环消息处理机制
+
+   ```Java
+   private Handler.Callback mSubCallback = new Handler.Callback() {
+           //该接口的实现就是处理异步耗时任务的，因此该方法执行在子线程中
+           @Override
+           public boolean handleMessage(Message msg) {
+                   //doSomething  处理异步耗时任务的
+                   mUIHandler.sendMessage(msg1);   //向UI线程发送消息，用于更新UI等操作
+           }
+       };
+   ```
+
+3. 构造子线程的Handler
+
+   ```java
+   //由于这里已经获取了workHandle.getLooper()，因此这个Handler是在HandlerThread线程也就是子线程中
+   childHandler = new Handler(handlerThread.getLooper(), mSubCallback);
+   
+   button.setOnClickListener(new OnClickListener() {
+       @Override
+       public void onClick(View v) {
+           //发送异步耗时任务到HandlerThread中,也就是上面的mSubCallback中
+           childHandler.sendMessage(msg);
+       }
+   });
+   ```
+
+4. 构建UI线程Handler处理消息
+
+   ```java
+   private Handler mUIHandler = new Handler(){
+           @Override
+           public void handleMessage(Message msg) {
+               //在UI线程中做的事情，比如设置图片什么的
+           }
+       };
+   ```
+
+**实现原理**
+
+​	我们知道，在子线程创建一个Handler，需要手动创建Looper，即先Looper.parpare()，完了在Looper.loop()。HandlerThread的run方法：
+
+```java
+@Override
+    public void run() {
+        mTid = Process.myTid();  //获得当前线程的id
+        Looper.prepare();
+        synchronized (this) {
+            mLooper = Looper.myLooper();
+            //发出通知，当前线程已经创建mLooper对象成功，这里主要是通知getLooper方法中的wait
+            notifyAll();
+        }
+        //设置当前线程的优先级
+        Process.setThreadPriority(mPriority);
+        //该方法实现体是空的，子类可以实现该方法，作用就是在线程循环之前做一些准备工作，当然子类也可以不实现。
+        onLooperPrepared();
+        Looper.loop();
+        mTid = -1;
+    }
+```
+
+**特点：**
+
+1. HandlerThread其实是Handler+Thread+Looper的组合，它本质上是一个Thread，因为它继承了Thread，相比普通的Thread，他不会阻塞，因为它内部通过Looper实现了消息循环机制，保证了多个任务的串行执行。缺点：效率低。
+2. HandlerThread需要搭配Handler使用，单独使用的意义不大。HandlerThread线程中作具体的事情，必须要在Handler的callback接口中进行，他自己的run方法被写死了。
+3. 子线程中的Handler与HandlerThread的联系是通过childHandler=new Handler(handlerThread.getLooper(),mSubCallback)执行的，也就是说，childHandler获得HandlerThread线程的Looper，这样他们两个就在同一个阵营了，这也就是创建Handler作为HandlerThread线程消息执行者，必须在调用start()方法之后的原因 —— HandlerThread.start()之后，run方法才能跑起来，Looper才得以创建，handlerThread.getLooper()才不会出错。
+4. HandlerThread会将通过handleMessage传递进来的任务进行串行执行，由messageQueue的特性决定的，从而也说明了HandlerThread效率相对比较低。
+
+### 23. IntentService
+
+​	IntentService是继承并处理异步请求的一个类，其本质上是一个Service，因为它是继承至Service，所以开启IntentService和普通的Service一致。但是他和普通的Service不同之处在于它可以处理异步任务，在任务处理完之后会自动结束。另外，我们可以启动多次IntentService，而每一个耗时任务会以工作队列的方式在IntentService的onHandleIntent回调方法中执行，并且是串行执行。其实IntentService的内部是通过HandleThread和Handle来实现异步操作的。
+
 ## 数据结构
 
 * 线性表
@@ -3676,3 +3765,15 @@ UPD：
   HTTP1.1支持持久连接，也就是说长连接，在一个TCP连接上可以传送多个HTTP请求和响应，减少了建立和关闭连接的消耗和延迟。
 
   一个包含有许多图像的网页文件的多个请求和应答可以在一个连接中传输，但每个单独的网页文件的请求和应答仍然需要使用各自的连接。HTTP1.1还允许客户端不要等待上一次请求结果返回，就可以发出下一次请求，但服务器端必须按照接收到客户端请求的先后顺序依次回送响应结果，
+
+
+
+### DNS解析过程
+
+[https://www.jianshu.com/p/7e268c559aff](https://www.jianshu.com/p/7e268c559aff)
+
+DNS域名解析服务器。解析过程：
+
+1. 当用户在浏览器输入一个域名的时候，最先浏览器会从自己的缓存中寻找指定的结果。如果找到了域名对应的IP则域名解析完成。这个缓存大小是有限的，另外每一条结果都有过期时间，这个过期时间通过TTL属性来指定。
+2. 如果在浏览器中的缓存没有命中，则会在系统的缓存中查找这个域名是否有对应的DNS解析结果，如果有则域名解析完成。这个缓存通常是以文件的方式来保存，比如windows下通过C:\windows\system32\driver\etc\hosts文件来设置的，Linux则是etc/named/config文件，通过编辑这个文件我们能把域名映射到任意一个IP中。
+3. 
