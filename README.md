@@ -3537,7 +3537,7 @@ HandlerThread自带的Looper使它可以通过消息队列，来重复使用当�
    ```java
    //由于这里已经获取了workHandle.getLooper()，因此这个Handler是在HandlerThread线程也就是子线程中
    childHandler = new Handler(handlerThread.getLooper(), mSubCallback);
-   
+
    button.setOnClickListener(new OnClickListener() {
        @Override
        public void onClick(View v) {
@@ -3755,7 +3755,7 @@ UPD：
 * UDP不保证数据的顺序结构，而TCP必须保证数据的顺序结构。
 * TCP面向字节流，实际上是TCP把数据看成一连串无结构的字节流；UDP是面向报文的，UDP没有阻塞控制，因此网络出现阻塞不会使源主机的发送速率降低。
 
-### Http1.1和Http1.0及2.0的区别
+### 2. Http1.1和Http1.0及2.0的区别
 
 **HTTP1.1与1.0的区别**
 
@@ -3768,12 +3768,115 @@ UPD：
 
 
 
-### DNS解析过程
+### 3. DNS解析过程
 
 [https://www.jianshu.com/p/7e268c559aff](https://www.jianshu.com/p/7e268c559aff)
 
 DNS域名解析服务器。解析过程：
 
 1. 当用户在浏览器输入一个域名的时候，最先浏览器会从自己的缓存中寻找指定的结果。如果找到了域名对应的IP则域名解析完成。这个缓存大小是有限的，另外每一条结果都有过期时间，这个过期时间通过TTL属性来指定。
+
 2. 如果在浏览器中的缓存没有命中，则会在系统的缓存中查找这个域名是否有对应的DNS解析结果，如果有则域名解析完成。这个缓存通常是以文件的方式来保存，比如windows下通过C:\windows\system32\driver\etc\hosts文件来设置的，Linux则是etc/named/config文件，通过编辑这个文件我们能把域名映射到任意一个IP中。
-3. 
+
+   > 如果前面两个流程都没有找到指定域名的解析结果，那么下面就要进行真正的域名解析了。为什么叫做真正的域名解析呢？因为前面的都是在本机中完成的，下面的流程就要依赖外部服务器来查找指定的域名的解析结果
+
+3. 系统缓存未命中之后会把这个域名提交到指定的LDNS服务器中（本地DNS服务器），这个服务器就是你计算机设定的DNS服务器。如果你在学校的网络中，这个DNS服务器一定在你学校里，如果你在小区的网络，这个DNS服务器通常是运营商提供的。这个域名解析服务器缓存了大量的域名的DNS解析结果，通常80%的DNS解析需求在这一步就满足了，所以LDNS完成了大部分的DNS解析任务。
+
+4. 如果指定的域名在LDNS服务器的缓存中仍然没有命中，LDNS会向ROOT Service发送请求。
+
+5. ROOT Server会返回给LDNS一个指定域名对应的主域名服务器gTL的地址D，gTLD是顶级域名服务器，如com、cn、org等等。
+
+6. LDNS接下来会向这个gTLD服务器发送域名解析请求。
+
+7. 接收请求的gTLD会返回给LDNS一个该域名对应的Name Server服务器地址，这个Name Server通常就是你注册的域名服务器。例如你在某个域名服务提供商申请的域名，这个域名就由他们的服务器解析。
+
+8. NAME Server会把指定域名的IP和一个TTL返回给LDNS。
+
+9. LDNS会把这个结果缓存下来，缓存的过期时间由TTL来决定
+
+10. 然后LDNS再把这个结果返回给用户，DNS解析结束。
+
+从上面来看如果LDNS中没有查找到指定域名的对应IP，则需要很长的时间来获取解析结果。但是一旦解析结果被缓存了，下次在请求同样的域名就不会那么慢了。
+
+### 4. HTTP请求报文和响应报文
+
+[HTTP请求报文和响应报文](http://www.cnblogs.com/biyeymyhjob/archive/2012/07/28/2612910.html)
+
+​	HTTP报文是面向文本的，报文中的每一个字段都是一些ASCII码串，各个字段的长度是不确定的。HTTP有两类报文：请求报文和响应报文。
+
+**HTTP请求报文**
+
+​	一个HTTP请求报文由请求行、请求头、空行和请求数据四个部分组成。
+
+![](https://pic002.cnblogs.com/images/2012/426620/2012072810301161.png)
+
+* 请求行
+
+  请求行由请求方法、URL字段、HTTP协议这三个字段组成，它们用空格分隔。例如：GET /index.html HTTP/1.1
+
+* 请求头部
+
+  请求头部由关键字/值对组成，每行一对，关键字和值用英文冒号分隔。请求头部通知服务器有关于客户端请求的信息，典型的请求头有：
+
+  User-Agent：产生请求的浏览器类型。
+
+  Accept：客户端可识别的内容类型列表。
+
+  Host：请求的主机名，允许多个域名同一个IP地址，即虚拟主机。
+
+* 空行
+
+  最后一个请求头之后是一个空行，发送回车符和换行符，通知服务器以下不再有请求头。
+
+* 请求数据
+
+  请求数据不在GET方法中使用，而是在POST方法中使用。POST方法适用于需要客户端填写表单的场合。与请求数据相关的最常用的请求头是Content-Type和Content-Length。
+
+**HTTP响应报文**
+
+​	HTTP响应报文也是由三个部分组成，分别是：状态行、请求包头、响应正文。类似以下：
+
+```
+＜status-line＞
+
+＜headers＞
+
+＜blank line＞
+
+[＜response-body＞]
+```
+
+在相应中唯一真正的区别在于第一行中用状态信息代替了请求信息。状态行通过提供一个状态码来说明请求的资源情况。
+
+状态行格式如下：
+
+```
+HTTP-Version Status-Code Reason-Phrase CRLF
+```
+
+其中，HTTP-Version表示服务器HTTP协议的版本；Status-Code表示服务器发回的响应状态代码；Reason-Phrase表示状态代码的文本描述。状态码由三位数字组成，第一个数字定义了响应的类别，且有五种可能的取值。
+
+1. 1xx：指示信息，表示请求已接收，继续处理
+2. 2xx：成功，表示请求已被成功接收
+3. 3xx：重定向，要完成的请求必须进行更进一步的操作
+4. 4xx，客户端错误，请求有语法错误或者请求无法实现
+5. 5xx，服务器端错误，服务器未能实现合法的请求
+
+HTTP响应报文的例子：
+
+```xml
+HTTP/1.1 200 OK
+Date: Sat, 31 Dec 2005 23:59:59 GMT
+Content-Type: text/html;charset=ISO-8859-1
+Content-Length: 122
+
+＜html＞
+＜head＞
+＜title＞Wrox Homepage＜/title＞
+＜/head＞
+＜body＞
+＜!-- body goes here --＞
+＜/body＞
+＜/html＞
+```
+
