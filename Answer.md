@@ -48,7 +48,7 @@ hashCode()方法返回的就是一个数值，从方法名上来看，其目的�
 
 
 
-### 2. int、char、long 各占多少字节数
+### 2. <span id="java_base_2">int、char、long 各占多少字节数</span>
 
 | 类型     | 位数   | 字节数  |
 | ------ | ---- | ---- |
@@ -63,7 +63,7 @@ hashCode()方法返回的就是一个数值，从方法名上来看，其目的�
 
 
 
-### 3. int 和 Integer 的区别
+### 3. <span id="java_base_3">int 和 Integer 的区别</span>
 
 Java 为每一个基本数据类型都引入了对应的包装类，从Java 5 开始引入了自动装箱 / 拆箱机制，使得两者可以相互转化。**所以最基本的一点区别就是**：Integer 是int的包装类，int的初始值为零，而Integer的初值为null。int与Integer相比，会把Integer自动拆箱为int再去比。
 
@@ -71,7 +71,7 @@ Java 为每一个基本数据类型都引入了对应的包装类，从Java 5 �
 
 
 
-### 4. 谈谈对Java多态的理解
+### 4.  <span id="java_base_4">谈谈对Java多态的理解</span>
 
 多态即：事物在运行过程中存在不同的状态。多态的存在有三个前提：要有继承关系、子类重写父类方法、父类数据类型的引用指向子类对象。弊端就是：不能使用子类特有的成员属性和子类特有的成员方法。如果非要用到不可，可以强制类型转换。
 
@@ -79,7 +79,7 @@ Java 为每一个基本数据类型都引入了对应的包装类，从Java 5 �
 
 
 
-### 5. String、StringBuffer、StringBuilder的区别
+### 5.  <span id="java_base_5">String、StringBuffer、StringBuilder的区别</span>
 
 String：字符串常量，使用字符串拼接时是不同的两个空间。
 
@@ -91,7 +91,7 @@ StringBuilder执行效率高于StringBuffer高于String。String是一个常量�
 
 
 
-### 6. 什么是内部类？内部类的作用
+### 6. <span id="java_base_6"> 什么是内部类？内部类的作用</span>
 
 Java 常见的内部类有四种：成员内部类、静态内部类、方法内部类和匿名内部类。
 
@@ -105,7 +105,7 @@ Java 常见的内部类有四种：成员内部类、静态内部类、方法内
 
 
 
-### 7. 抽象类和接口的区别
+### 7.  <span id="java_base_7">抽象类和接口的区别</span>
 
 抽象类使用abstract class 定义，抽象类既可以有抽象方法也可以有其他类型的方法，既可以有静态属性也可以有非静态属性。
 
@@ -125,25 +125,25 @@ Java 常见的内部类有四种：成员内部类、静态内部类、方法内
 
 
 
-### 8. 抽象类的意义
+### 8.  <span id="java_base_8">抽象类的意义</span>
 
 为子类提供一个公共的类型；封装子类中重复的内容；定义有抽象方法，子类虽然有不同的实现，但该方法的定义是一致的；
 
 
 
-### 9. 抽象类与接口的应用场景
+### 9.  <span id="java_base_9">抽象类与接口的应用场景</span>
 
 如果你拥有一些方法并且想让它们中的一些默认实现，那么就用抽象类；如果你想实现多继承，那么必须实用接口；如果基本功能在不断变化，那么就需要使用抽象类，如果不断改变基本功能并且使用接口，那么就要改变所有实现了该接口的类。
 
 
 
-### 10. 抽象类是否可以没有方法和属性？
+### 10.  <span id="java_base_10">抽象类是否可以没有方法和属性？</span>
 
 可以，抽象类可以没有方法和属性，但是含有抽象方法的类一定是抽象类。
 
 
 
-### 11. 接口的意义
+### 11.  <span id="java_base_11">接口的意义</span>
 
 规范、扩展、回调。
 
@@ -151,7 +151,7 @@ Java 常见的内部类有四种：成员内部类、静态内部类、方法内
 
 
 
-### 12. 泛型中的extends和super的区别
+### 12.  <span id="java_base_12">泛型中的extends和super的区别</span>
 
 ```
 <? extends T>和<? super T>是泛型中的“通配符”和“边界”的概念。
@@ -165,13 +165,13 @@ Java 常见的内部类有四种：成员内部类、静态内部类、方法内
 
 
 
-### 13. 父类的静态方法能否被子类重写？
+### 13.  <span id="java_base_13">父类的静态方法能否被子类重写？</span>
 
 不能，子类继承父类后，非静态方法覆盖父类的方法，父类的静态方法被隐藏。
 
 
 
-### 14. 进程和线程的区别
+### 14. <span id="java_base_14"> 进程和线程的区别</span>
 
 进程是资源分配的基本单位，线程是处理器调度的基本单位。
 
@@ -187,7 +187,7 @@ Java 常见的内部类有四种：成员内部类、静态内部类、方法内
 
 
 
-### 15. final、finally、finalize的区别
+### 15.  <span id="java_base_15">final、finally、finalize的区别</span>
 
 final用于声明属性、方法和类，分别表示属性不可变，方法不可覆盖，类不可继承。
 
@@ -197,13 +197,13 @@ finalize是Object类的一个方法，在垃圾收集器执行的时候会回调
 
 
 
-### 16. 序列化的方式
+### 16.  <span id="java_base_16">序列化的方式</span>
 
 实现Serializable接口和实现Parcelable接口。
 
 
 
-### 17. Serializable 和 Parcelable 的区别
+### 17.  <span id="java_base_17">Serializable 和 Parcelable 的区别</span>
 
 Serializable 是 Java的序列化接口。特点是简单，直接实现该接口就行了，其他工作都被系统完成了，但是对于内存开销大，序列化和反序列化需要很多的 I/O 流操作。
 
@@ -213,7 +213,7 @@ Parcelable 是Android的序列化方式，主要用于在内存序列化上，�
 
 
 
-### 18. 静态属性和静态方法是否可以被继承？是否可以被重写？以及原因。
+### 18.  <span id="java_base_18">静态属性和静态方法是否可以被继承？是否可以被重写？以及原因。</span>
 
 静态属性和静态方法可以被继承，但是没有被重写而是被隐藏。
 
@@ -227,7 +227,7 @@ Parcelable 是Android的序列化方式，主要用于在内存序列化上，�
 
 
 
-### 19. 静态内部类的设计意图
+### 19.  <span id="java_base_19">静态内部类的设计意图</span>
 
 只是为了降低包的深度，方便类的使用，静态内部类适用于包含类当中，但又不依赖于外在的类，不用使用外在类的非静态属性和方法，只是为了方便管理类结构而定义。在创建静态内部类的时候，不需要外部类对象的引用。
 
@@ -248,7 +248,7 @@ Outer.StaticInner inner0 = new Outer.StaticInner();
 
 
 
-### 20. 成员内部类、静态内部类、方法内部类（局部内部类）和匿名内部类的理解，以及项目中的应用
+### 20.  <span id="java_base_20">成员内部类、静态内部类、方法内部类（局部内部类）和匿名内部类的理解，以及项目中的应用</span>
 
 成员内部类：
 
@@ -330,17 +330,17 @@ class Outter {
 
 
 
-### 21. 谈谈对kotlin的理解
+### 21.  <span id="java_base_21">谈谈对kotlin的理解</span>
 
 挖个坑，以后自己填！哼哼（傲娇脸
 
 
 
-### 22. 闭包和局部内部类的区别
+### 22.  <span id="java_base_22">闭包和局部内部类的区别</span>
 
 
 
-### 23. String转换成Integer的方式以及原理
+### 23.  <span id="java_base_23">String转换成Integer的方式以及原理</span>
 
 String转int：
 
@@ -464,7 +464,7 @@ public static int parseInt(String s, int radix)  throws NumberFormatException
 
 
 
-### 24. 面向对象思想
+### 24.  <span id="java_base_24">面向对象思想</span>
 
 #### 设计原则 S.O.L.I.D
 
@@ -550,13 +550,13 @@ public static int parseInt(String s, int radix)  throws NumberFormatException
 
 ## Java 部分（二）高级知识点
 
-### 1. 哪些情况下的对象会被垃圾回收机制处理掉？
+### 1.  <span id="java_advance_1">哪些情况下的对象会被垃圾回收机制处理掉？</span>
 
 垃圾回收机制中最基本的做法是分代回收。内存区域被划分为三代：新生代、老年代和永久代。对于不同世代可以使用不同的垃圾回收算法。一般来说，一个应用中的大部分对象的存活时间都很短，基于这一点，对于新生代的垃圾回收算法就可以很有针对性。
 
 参考自：[Java — 垃圾收集灵魂拷问三连（一）](http://omooo.top/2017/12/25/Java%20---%20%E5%85%B3%E4%BA%8E%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%81%B5%E9%AD%82%E6%8B%B7%E9%97%AE%E4%B8%89%E8%BF%9E%EF%BC%88%E4%B8%80%EF%BC%89)
 
-### 2. 讲一下常见的编码方式？
+### 2. <span id="java_advance_2">讲一下常见的编码方式？</span>
 
 编码的原因：
 
@@ -586,7 +586,7 @@ UTF-16统一采用两个字节表示一个字符，虽然表示上非常简单�
 
 
 
-### 3. UTF-8编码中中文占几个字节，int型几个字节？
+### 3. <span id="java_advance_3">UTF-8编码中中文占几个字节，int型几个字节？</span>
 
 中文占字节数可以是2、3和4个的，最高为4个字节。
 
@@ -594,13 +594,13 @@ UTF-16统一采用两个字节表示一个字符，虽然表示上非常简单�
 
 
 
-### 4. 静态代理和动态代理的区别，什么场景使用？
+### 4. <span id="java_advance_4">静态代理和动态代理的区别，什么场景使用？</span>
 
 参考自：[https://www.jianshu.com/p/2f518a4a4c2b](https://www.jianshu.com/p/2f518a4a4c2b)
 
 
 
-### 5. Java的异常体系
+### 5. <span id="java_advance_5">Java的异常体系</span>
 
 异常简介：异常是阻止当前方法继续执行的问题，如：文件找不到、网络连接失败、非法参数等等。发现异常的理想时期是编译阶段，然而编译阶段不能找出所有的异常，余下的问题必须在运行期间。
 
@@ -643,25 +643,25 @@ throw：抛出异常，并退出当前方法或作用域
 
 
 
-### 6. 谈谈你对解析与分派的认识
+### 6. <span id="java_advance_6">谈谈你对解析与分派的认识</span>
 
 [深入理解Java虚拟机之：多态性实现机制----静态分派与动态分配](https://www.jianshu.com/p/1976b01c07d2)
 
 
 
-### 7. 修改对象A的equals方法的签名，那么使用HashMap存放这个对象实例的时候，会调用哪个equals方法？
+### 7. <span id="java_advance_7">修改对象A的equals方法的签名，那么使用HashMap存放这个对象实例的时候，会调用哪个equals方法？</span>
 
 
 
-### 8. Java中实现多态的机制是什么？
+### 8. <span id="java_advance_8">Java中实现多态的机制是什么？</span>
 
 
 
-### 9. 如何将一个Java对象序列化到文件里？
+### 9. <span id="java_advance_9">如何将一个Java对象序列化到文件里？</span>
 
 
 
-### 10. 说说你对Java反射的理解
+### 10. <span id="java_advance_10">说说你对Java反射的理解</span>
 
 反射：在运行状态中，对于任意一个类，都能够知道这个类的所有属性和方法；对于任意一个对象，都能够调用它的任意一个方法和属性；这种动态获取的信息以及动态调用对象的方法的功能称为 Java 语言的反射机制。
 
@@ -685,7 +685,7 @@ throw：抛出异常，并退出当前方法或作用域
 
 
 
-### 11. 说说你对Java注解的理解
+### 11.<span id="java_advance_11"> 说说你对Java注解的理解</span>
 
 注解（Annotion）是一个接口（前加 @），程序可以通过反射来获取指定程序元素的Annotion对象，然后通过Annotion对象来获取注解里面的元数据。
 
@@ -1047,7 +1047,7 @@ public class TagTest {
 
 引自：[http://www.open-open.com/lib/view/open1423558996951.html](http://www.open-open.com/lib/view/open1423558996951.html)
 
-### 12. 说说你对依赖注入的理解
+### 12. <span id="java_advance_12">说说你对依赖注入的理解</span>
 
 依赖注入：可以通过这个服务来安全的注入组件到应用程序中，在应用程序部署的时候还可以选择从特定的接口属性进行注入。
 
@@ -1059,15 +1059,15 @@ public class TagTest {
 
 
 
-### 13. 说一下泛型原理，并举例说明
+### 13. <span id="java_advance_13">说一下泛型原理，并举例说明</span>
 
 
 
-### 14. Java中String的了解
+### 14.<span id="java_advance_14"> Java中String的了解</span>
 
 
 
-### 15. String为什么要设计成不可变的？
+### 15. <span id="java_advance_15">String为什么要设计成不可变的？</span>
 
 String 是 Java 中一个不可变类，所以他一旦被实例化就无法被修改。为什么要把String设计成不可变的呢？那就从内存、同步和数据结构层面上谈起。
 
@@ -1140,17 +1140,17 @@ String被广泛的使用在其他类中充当参数，如果字符串可变，�
 
 
 
-### 16. Object类的equal和hashCode方法重写，为什么？
+### 16.<span id="java_advance_16"> Object类的equal和hashCode方法重写，为什么？</span>
 
 
 
-### 17. 为什么Java里的匿名内部类只能访问final修饰的外部变量？
+### 17. <span id="java_advance_17">为什么Java里的匿名内部类只能访问final修饰的外部变量？</span>
 
 	因为匿名内部类最终会被编译成一个单独的类，而被该类使用的变量会以构造函数参数的形式传递给该类。如果变量不定义为final的，参数在匿名内部类中可以被修改，进而造成和外部的变量不一致的问题，为了避免这种不一致的情况，规定匿名内部类只能访问final修饰的外部变量。
 
 
 
-### 18. Synchronized
+### 18. <span id="java_advance_18">Synchronized</span>
 
 	synchronized，是Java中用于解决并发情况下数据同步访问的一个很重要的关键字。当我们想要保证一个共享资源在同一个时间只会被一个线程访问到时，我们可以在代码中使用synchronized关键字对类或者对象加锁。
 
@@ -1211,7 +1211,7 @@ Java的线程是映射到操作系统原生线程之上的，如果要阻塞或�
 
 所以，在JDK1.6中出现对锁进行了很多的优化，进而出现了轻量级锁、偏向锁、锁消除，适应性自旋锁等等，这些操作都是为了在线程之间更高效的共享数据，解决竞争问题。
 
-### 19. volatile
+### 19.<span id="java_advance_19"> volatile</span>
 
 **volatile用法**
 volatile通常被比喻成轻量级的synchronized，也是Java并发编程中比较重要的一个关键字，和synchronized不同，volatile是一个变量修饰符，只能用来修饰变量，无法修饰方法以及代码块。
@@ -1255,7 +1255,7 @@ synchronized可以保证原子性、有序性和可见性，而volatile只能保
 
 
 
-### 20. 类加载流程双亲委托机制
+### 20. <span id="java_advance_20">类加载流程双亲委托机制</span>
 
 **类加载流程**
 
@@ -1284,15 +1284,15 @@ synchronized可以保证原子性、有序性和可见性，而volatile只能保
 
 ## Java 部分（三）数据结构
 
-### 1. 常用数据结构简介
+### 1.  <span id="java_structure_1">常用数据结构简介</span>
 
 
 
-### 2. 并发集合了解哪些？
+### 2. <span id="java_structure_2">并发集合了解哪些？</span>
 
 
 
-### 3. HashMap
+### 3. <span id="java_structure_3">HashMap</span>
 
 **简介**
 
@@ -1697,7 +1697,7 @@ HashMap的大小很简单，不是实时计算的，而是每次新增加Entry�
 
 ## Java 部分（四）线程、多线程和线程池
 
-### 1. 开启线程的三种方式？
+### 1. <span id="java_thread_1">开启线程的三种方式？</span>
 
 #### 继承Thread类创建线程类
 
@@ -1822,21 +1822,21 @@ public class CallableThreadTest implements Callable<Integer> {
 
 	线程类已经继承了Thread类，所以不能在继承其他父类。
 
-### 2. 线程和进程的区别？
+### 2. <span id="java_thread_2">线程和进程的区别？</span>
 
 
 
-### 3. 为什么要有线程，而不是仅仅用进程？
+### 3. <span id="java_thread_3">为什么要有线程，而不是仅仅用进程？</span>
 
 	线程增加进程的并发度，线程能更有效的利用多处理器和多内核。
 
-### 4. run() 和 start() 方法的区别？
+### 4. <span id="java_thread_4">run() 和 start() 方法的区别？</span>
 
 	主要区别在于当程序调用start方法一个新线程将会被创建，并且在run方法中的代码将会在新线程上运行，然而在你直接调用run方法的时候，程序并不会创建新线程，run方法内部的代码将在当前线程上运行。
 	
 	另外一个区别在于，一旦一个线程被启动，你不能重复调用该Thread对象的start方法，调用已经启动线程的start方法将会报IIIegalStateException异常，而重复调用run方法是没有问题的。
 
-### 5. 如何控制某个方法允许并发访问线程的个数？
+### 5. <span id="java_thread_5">如何控制某个方法允许并发访问线程的个数？</span>
 
 ```java
 Semaphore semaphore = new Semaphore(5);//线程run中只有5个线程可并发访问
@@ -1844,11 +1844,11 @@ semaphore.acquire();//申请一个信号
 semaphore.release();//释放一个信号
 ```
 
-### 6. 在 Java 中 wait() 和 sleep() 方法的区别
+### 6. <span id="java_thread_6">在 Java 中 wait() 和 sleep() 方法的区别</span>
 
 
 
-### 7. 谈谈 wait/notify 关键字的理解
+### 7. <span id="java_thread_7">谈谈 wait/notify 关键字的理解</span>
 
 	都是本地final方法，调用之前持有对象锁。
 	
@@ -1856,43 +1856,43 @@ semaphore.release();//释放一个信号
 	
 	notify，通知唤醒wait队列中的线程（某个）
 
-### 8. 什么导致线程阻塞？
+### 8. <span id="java_thread_8">什么导致线程阻塞？</span>
 
 	Thread.sleep t.join 等待输入
 
-### 9. 线程如何关闭？
+### 9. <span id="java_thread_9">线程如何关闭？</span>
 
 
 
-### 10. 讲一下 Java 中的同步的方法
+### 10. <span id="java_thread_10">讲一下 Java 中的同步的方法</span>
 
 
 
-### 11. 数据一致性如何保证？
+### 11. <span id="java_thread_11">数据一致性如何保证？</span>
 
 
 
-### 12. 如何保证线程安全？
+### 12. <span id="java_thread_12">如何保证线程安全？</span>
 
 
 
-### 13. 如何实现线程同步？
+### 13.<span id="java_thread_13"> 如何实现线程同步？</span>
 
 
 
-### 14. 两个进程同时要求读写，能不能实现？如何防止进程同步？
+### 14. <span id="java_thread_14">两个进程同时要求读写，能不能实现？如何防止进程同步？</span>
 
 
 
-### 15. 线程间操作 List
+### 15. <span id="java_thread_15">线程间操作 List</span>
 
 
 
-### 16. Java 中对象的生命周期
+### 16. <span id="java_thread_16">Java 中对象的生命周期</span>
 
 
 
-### 17. 说说线程池
+### 17. <span id="java_thread_17">说说线程池</span>
 
 **线程池的好处**
 
@@ -1966,11 +1966,11 @@ semaphore.release();//释放一个信号
 
 ## Android 部分（一）基础知识点
 
-### 1. 四大组件是什么？
+### 1. <span id="android_base_1">四大组件是什么？</span>
 
 四大组件：Activity、Service、BroadcastReceiver、ContentProvider。
 
-### 2. 四大组件的生命周期和简单用法
+### 2. <span id="android_base_2">四大组件的生命周期和简单用法</span>
 
 ### **Activity：**
 
@@ -2519,7 +2519,7 @@ content://com.example.app.provider/table/#
 
   ​
 
-### 3. Context的理解？
+### 3. <span id="android_base_3">Context的理解？</span>
 
 Android应用模型是基于组件的应用设计模式，组件的运行要有一个完整的Android工程环境。在这个工程环境下，Activity、Service等系统组件才能够正常工作，而这些组件并不能采用普通的Java对象创建方式，new一下就能创建实例了，而是要有它们各自的上下文环境，也就是Context，Context是维持Android程序中各组件能够正常工作的一个核心功能类。
 
@@ -2610,7 +2610,7 @@ public class MyReceiver extends BroadcastReceiver{
 
 
 
-### 4. AsyncTask详解
+### 4. <span id="android_base_4">AsyncTask详解</span>
 
 #### Android中的线程
 
@@ -2680,7 +2680,7 @@ Result：异步任务执行完成后，返回的结果类型
 
 
 
-### 5. Android虚拟机以及编译过程
+### 5. <span id="android_base_5">Android虚拟机以及编译过程</span>
 
 #### 什么是Dalvik虚拟机？
 
@@ -2803,7 +2803,7 @@ Dalvik内存管理特点是：内存碎片化严重，当然这也是标记清�
 
 
 
-### 6. 进程保活方案
+### 6.<span id="android_base_6"> 进程保活方案</span>
 
 #### 保活的两个方案
 
@@ -2876,7 +2876,7 @@ Dalvik内存管理特点是：内存碎片化严重，当然这也是标记清�
 
 
 
-### 7. Android 消息机制
+### 7. <span id="android_base_7">Android 消息机制</span>
 
 #### 消息机制简介
 
@@ -2959,7 +2959,7 @@ ThreadLocal是一个泛型类，里面有两个重要方法：get()和set()方�
 
 [https://blog.csdn.net/singwhatiwanna/article/details/48350919](https://blog.csdn.net/singwhatiwanna/article/details/48350919)
 
-### 8. Window、Activity、DecorView以及ViewRoot之间的关系
+### 8. <span id="android_base_8">Window、Activity、DecorView以及ViewRoot之间的关系</span>
 
 #### 职能简介
 
@@ -2993,7 +2993,7 @@ ViewRoot并不属于View树的一份子。从源码实现上来看，它既是�
 
 Activity就像个控制器，不负责视图部分。Window像个承载器，装着内部视图。DecorView就是个顶级视图，是所有View的最外层布局。ViewRoot像个连接器，负者沟通，通过硬件感知来通知视图，进行用户之间的交互。
 
-### 9. Android事件分发机制
+### 9. <span id="android_base_9">Android事件分发机制</span>
 
 [图解 Android 事件分发机制](https://www.jianshu.com/p/e99b5e8bd67b)
 
@@ -3015,7 +3015,7 @@ Activity就像个控制器，不负责视图部分。Window像个承载器，装
 * ViewGroup的拦截器onInterceptTouchEvent默认是不拦截的，所以return super和return false是一样的
 * View没有拦截器，为了让View可以把事件分发给自己的onTouchEvent处理，View的dispatchTouchEvent默认实现（super）就是把事件分发给自己的onTouchEvent
 
-### 10. dp、sp、px的理解以及相互转换
+### 10. <span id="android_base_10">dp、sp、px的理解以及相互转换</span>
 
 **px**
 
@@ -3088,7 +3088,7 @@ float fontScale = c.fontScale;      // 字体缩放比例
     }
 ```
 
-### 11. RelativeLayout和LinearLayout在实现效果同等的情况下使用哪个？为什么？
+### 11. <span id="android_base_11">RelativeLayout和LinearLayout在实现效果同等的情况下使用哪个？为什么？</span>
 
 [Android中RelativeLayout和LinearLayout性能分析](https://www.jianshu.com/p/8a7d059da746)
 
@@ -3132,7 +3132,7 @@ View的measure方法里对绘制过程做了一个优化，如果我们的子Vie
 * RelativeLayout的子View如果高度和RelativeLayout不同，则会引发效率问题。当子View很复杂时，这个问题会更加严重。如果可以，尽量使用padding代替margin
 * 在不影响层级深度的情况下，使用LinaerLayout和FrameLayout而不是RelativeLayout
 
-### 12. 布局相关的 <merge>、<viewstub> 控件作用及实现原理
+### 12. <span id="android_base_12">布局相关的 \<merge>、\<viewstub> 控件作用及实现原理</span>
 
 [从源码角度分析ViewStub 疑问与原理](https://blog.csdn.net/androiddevelop/article/details/46632323)
 
@@ -3144,7 +3144,7 @@ View的measure方法里对绘制过程做了一个优化，如果我们的子Vie
 
 
 
-### 13. Fragment详解
+### 13. <span id="android_base_13"> Fragment详解</span>
 
 #### 生命周期
 
@@ -3205,7 +3205,7 @@ Fragment依附于Activity存在，因此与Activity之间的通信可以归纳�
 
 
 
-### 14. Json、XML
+### 14. <span id="android_base_14">Json、XML</span>
 
 Json是一种轻量级的数据交换格式，具有良好的可读和便于编写的特性。XML即扩展标记语言，用来标记电子文件使其具有结构性的标记语言，可以用来标记数据。定义数据类型，是一种允许用户对自己的标记语言进行定义的源语言。
 
@@ -3213,7 +3213,7 @@ JSON在编码和解码上优于XML，并且数据体积更下，解析更快，�
 
 
 
-### 15. Assets目录与res目录的区别
+### 15. <span id="android_base_15">Assets目录与res目录的区别</span>
 
 	assets目录与res下的raw、drawable目录一样，也可用来存放资源文件，但它们三者区别如下：
 
@@ -3244,7 +3244,7 @@ InputStream is = getResources().openRawResource(R.id.filename);
 
 
 
-### 16. View视图绘制过程原理
+### 16. <span id="android_base_16">View视图绘制过程原理</span>
 
 	View视图绘制需要搞清楚两个问题，一个是从哪里开始绘制，一个是怎么绘制？
 
@@ -3264,7 +3264,7 @@ InputStream is = getResources().openRawResource(R.id.filename);
 * performDraw()会调用最外层的ViewGroup的draw()方法，其中会先后调用background.draw()绘制背景，onDraw(绘制自己)，dispatchDraw(绘制子View)、onDrawScrollBars(绘制装饰)
 * MeasureSpec由两位SpecMode(UNSPECIFIED、EXACTLY(对于精确值和match_parent)、AL_MOST(对应warp_content))和三十位SpecSize组成一个int，DecorView的MeasureSpec由窗口大小和其LayoutParams决定，其他View有父View的MeasureSpec和本View的LayoutParams决定。ViewGroup中有getChildMeasureSpec()来获取子View的MeasureSpec。
 
-### 17. 解决滑动冲突的方式？
+### 17. <span id="android_base_17">解决滑动冲突的方式？</span>
 
 	在自定义View的过程中经常会遇到滑动冲突问题，一般滑动冲突的类型有三种：（1）外部View滑动方向和内部View滑动方向不一致；（2）外部View滑动方向和内部View滑动方向一致；（3）上述两种情况的嵌套
 	
@@ -3280,7 +3280,7 @@ InputStream is = getResources().openRawResource(R.id.filename);
 
 
 
-### 18. APP Build过程
+### 18. <span id="android_base_18">APP Build过程</span>
 
 Android Studio点击build按钮之后，AS就会编译整个项目，并将apk安装到手机上，这个过程就是Android工程编译打包过程。主要的流程是：
 
@@ -3322,7 +3322,7 @@ Android Studio点击build按钮之后，AS就会编译整个项目，并将apk�
 
 
 
-### 19. Android利用scheme协议进行跳转
+### 19. <span id="android_base_19">Android利用scheme协议进行跳转</span>
 
 scheme是一种页面跳转协议。
 
@@ -3371,7 +3371,7 @@ String param = uri.getQueryParameter("goodsId");
 Toast.makeText(this, host + "  " + path + "  " + query + "  " + param, Toast.LENGTH_SHORT).show();
 ```
 
-### 20. MVC、MVP
+### 20. <span id="android_base_20">MVC、MVP</span>
 
 **MVC模式**
 
@@ -3413,7 +3413,7 @@ View与Model并不直接交互，而是使用Presenter作为View与Model之间�
 
 ![](http://upload-images.jianshu.io/upload_images/3985563-03352e00ce8b4083.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-### 21. SurfaceView
+### 21.<span id="android_base_21"> SurfaceView</span>
 
 SurfaceView继承至View的，与View的主要区别在于：
 
@@ -3531,7 +3531,7 @@ public class DrawBoardView extends SurfaceView implements SurfaceHolder.Callback
 
 
 
-### 22. HandlerThread
+### 22. <span id="android_base_22">HandlerThread</span>
 
 HandlerThread继承了Thread，所以它本质上是一个Thread，与普通Thread的区别在于，它不仅建立了一个线程，并且创立了消息队列，有自己的looper，可以让我们在自己的线程中分发和处理消息，并对外提供自己这个Looper对象的get方法。
 
@@ -3615,11 +3615,11 @@ HandlerThread自带的Looper使它可以通过消息队列，来重复使用当�
 3. 子线程中的Handler与HandlerThread的联系是通过childHandler=new Handler(handlerThread.getLooper(),mSubCallback)执行的，也就是说，childHandler获得HandlerThread线程的Looper，这样他们两个就在同一个阵营了，这也就是创建Handler作为HandlerThread线程消息执行者，必须在调用start()方法之后的原因 —— HandlerThread.start()之后，run方法才能跑起来，Looper才得以创建，handlerThread.getLooper()才不会出错。
 4. HandlerThread会将通过handleMessage传递进来的任务进行串行执行，由messageQueue的特性决定的，从而也说明了HandlerThread效率相对比较低。
 
-### 23. IntentService
+### 23. <span id="android_base_23">IntentService</span>
 
 	IntentService是继承并处理异步请求的一个类，其本质上是一个Service，因为它是继承至Service，所以开启IntentService和普通的Service一致。但是他和普通的Service不同之处在于它可以处理异步任务，在任务处理完之后会自动结束。另外，我们可以启动多次IntentService，而每一个耗时任务会以工作队列的方式在IntentService的onHandleIntent回调方法中执行，并且是串行执行。其实IntentService的内部是通过HandleThread和Handle来实现异步操作的。
 
-### 24. 谈谈你对Application类的理解
+### 24. <span id="android_base_24">谈谈你对Application类的理解</span>
 
 	首先，Application 在一个 Dalvik 虚拟机里面只会存在一个实例。为什么强调说是一个Dalvik虚拟机，而不是一个APP呢？那是因为，一个App有可能有多个Dalvik虚拟机，也就是传说中的多进程模式。在这种模式下，每一个Dalvik都会存在一个Application实例，它们之间没有关系，在A进程Application里面保存的数据不能在B进程的Application获取，因为它们根本不是一个对象。而且被隔离在两个进程里面，所以这里强调的是一个Dalvik虚拟机，而不是一个App。
 
@@ -3641,14 +3641,14 @@ Application有两个子类，一个是MultiDexApplication，如果你遇到了65
 
 
 
-### 25. Android为什么要设计出Bundle而不是直接使用HashMap来进行数据传递？
+### 25. <span id="android_base_25">Android为什么要设计出Bundle而不是直接使用HashMap来进行数据传递？</span>
 
 - Bundle内部是由ArrayMap实现的，ArrayMap的内部实现是两个数组，一个int数组是存储对象数据对应下标，一个对象数组保存key和value，内部使用二分发对key进行排序，所以在添加、删除、查找数据的时候，都会使用二分发查找，只适用于小数据量操作，如果在数据量比较大的情况下，那么它的性能将退化。而HashMap内部则是数组+链表结构，所以在数据量较小的时候，HashMap的Entry Array比ArrayMap占用更多的内存。因为使用Bundle的场景大多数为小数据量，所以相比之下，在这种情况下使用ArrayMap保存数据，在操作速度和内存占用上都具有优势。
 - 另外一个原因，则是在Android中如果使用Intent来携带数据的话，需要数据是基本类型或者是可序列化类型，HashMap使用Serializable进行序列化，而Bundle则是使用Pracelable进行序列化。而在Android平台，更推荐使用Pracelable实现序列化，虽然写法复杂，但是开销更小，所以为了更加快速的进行数据的序列化和反序列化，系统封装了Bundle类，方便我们进行数据的传输。
 
 
 
-### 26. SharedPreference在使用过程中有什么注意点？
+### 26. <span id="android_base_26">SharedPreference在使用过程中有什么注意点？</span>
 
 **commit()和apply()的区别**
 
@@ -3676,7 +3676,7 @@ Application有两个子类，一个是MultiDexApplication，如果你遇到了65
 
 
 
-### 27. SQLite有哪些可以优化的地方？
+### 27. <span id="android_base_27">SQLite有哪些可以优化的地方？</span>
 
 - 创建索引
 
@@ -3696,13 +3696,13 @@ Application有两个子类，一个是MultiDexApplication，如果你遇到了65
 
   查询时只取需要的字段和结果集，更多的结果集会消耗更多的时间以及内存，更多的字段会导致更多的内存消耗。
 
-### 28. 嵌滑滑动机制
+### 28. <span id="android_base_28">嵌滑滑动机制</span>
 
 	我们知道，Android的时间分发机制中，只要有一个控件消费了事件，其他控件就没办法在接受到这个事件了。因此，当有嵌套滑动场景时，我们需要自己动手解决事件冲突。
 
 嵌套滑动机制的基本原理可以认为是事件共享，即当子控件接受到滑动事件，准备要滑动时，会先通知父控件（startNestedScroll）；然后在滑动之前，会先询问父控件是否要滑动（dispatchNestedPreScroll）；如果父控件响应该事件进行了滑动，那么就会通知子控件它具体消耗了多少滑动距离；然后交由子控件处理剩余的滑动距离；最后子控件滑动结束后，如果滑动距离还有剩余，就会在问一下父控件是否需要在继续滑动剩下的距离（dispatchNestedScroll）
 
-###  29. RecyclerView 优化
+###  29. <span id="android_base_29">RecyclerView 优化</span>
 
 1. 尽量减少Item布局嵌套，比如使用ConstraintLayout
 
@@ -3870,7 +3870,7 @@ public int getLength(Node head){
 
 ## 计算机网络
 
-### 1. TCP 和 UDP 的区别
+### 1. <span id="net_1">TCP 和 UDP 的区别</span>
 
 TCP：
 
@@ -3888,7 +3888,7 @@ UPD：
 * UDP不保证数据的顺序结构，而TCP必须保证数据的顺序结构。
 * TCP面向字节流，实际上是TCP把数据看成一连串无结构的字节流；UDP是面向报文的，UDP没有阻塞控制，因此网络出现阻塞不会使源主机的发送速率降低。
 
-### 2. Http1.1和Http1.0及2.0的区别
+### 2. <span id="net_2">Http1.1和Http1.0及2.0的区别</span>
 
 **HTTP1.1与1.0的区别**
 
@@ -3937,7 +3937,7 @@ UPD：
   为了改善延迟，HTTP2.0引入了Server Push，它允许服务端推送资源给浏览器，在浏览器明确的请求之前，一个服务器经常知道一个页面需要很多附加资源，在它响应浏览器第一个请求的时候，就可以开始推送这些资源。这允许服务端充分的利用一个可能空闲的网络，改善页面加载时间。
 
 
-### 3. DNS解析过程
+### 3. <span id="net_3">DNS解析过程</span>
 
 [https://www.jianshu.com/p/7e268c559aff](https://www.jianshu.com/p/7e268c559aff)
 
@@ -3967,7 +3967,7 @@ DNS域名解析服务器。解析过程：
 
 从上面来看如果LDNS中没有查找到指定域名的对应IP，则需要很长的时间来获取解析结果。但是一旦解析结果被缓存了，下次在请求同样的域名就不会那么慢了。
 
-### 4. HTTP请求报文和响应报文
+### 4. <span id="net_4">HTTP请求报文和响应报文</span>
 
 [HTTP请求报文和响应报文](http://www.cnblogs.com/biyeymyhjob/archive/2012/07/28/2612910.html)
 
@@ -4067,7 +4067,7 @@ Content-Length: 122
 ＜/html＞
 ```
 
-### 5. 简述HTTP
+### 5. <span id="net_5">简述HTTP</span>
 
 	HTTP协议即超文本传输协议，是用于从万维网服务器传输超文本到本地浏览器的传送协议。HTTP是一个基于TCP/IP通信协议来传递数据。HTTP是一个属于应用层的面向对象的协议，由于其简单、快速的方式，适用于分布式超媒体信息系统。
 
