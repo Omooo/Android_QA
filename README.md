@@ -842,7 +842,7 @@ public @interface AnnTest {
 
 * @SafeVarargs
 
-  是JDK7专门为抑制“堆污染”警号提供的。
+  告诉编译器忽略可变长度参数可能引起的类型转换问题，该注解修饰的方法必须为 static。
 
 #### 2. 提取Annotation信息（反射）
 
@@ -1663,12 +1663,12 @@ HashMap的大小很简单，不是实时计算的，而是每次新增加Entry�
 **面试问题**
 
 **1. 构造函数中initialCapacity与loadFactor两个参数**
-	HashMap(int initialCapacity,float loadFactor)：构造一个指定容量和负载因子的空HashMap。
+​	HashMap(int initialCapacity,float loadFactor)：构造一个指定容量和负载因子的空HashMap。
 
 这两个参数是影响HashMap性能的重要参数，其中容量表示哈希表中桶的数量，初始容量是创建哈希表时的容量，负载因子是哈希表在其容量增加之前可以达到多满的一种尺度，它衡量的是一个散列表的空间的使用程度，负载因子越大表示散列表的填充程度越高，反之越小。
 
 **2. size为什么必须是2的整数次幂**
-	这是为了服务key映射到index的hash算法的，公式 index=hashcode(key)&(length-1)。HashMap中数组的size必须是2的幂，是为了将key的hash值均匀的分布在数组的索引上。HashMap中使用indexFor方法来计算key所在的数组的索引，实现逻辑为key的hash值与数组长度值减一进行与运算，代码如下：
+​	这是为了服务key映射到index的hash算法的，公式 index=hashcode(key)&(length-1)。HashMap中数组的size必须是2的幂，是为了将key的hash值均匀的分布在数组的索引上。HashMap中使用indexFor方法来计算key所在的数组的索引，实现逻辑为key的hash值与数组长度值减一进行与运算，代码如下：
 
 ```java
 	static int indexFor(int h, int length) {
@@ -1677,16 +1677,16 @@ HashMap的大小很简单，不是实时计算的，而是每次新增加Entry�
 ```
 
 **3. HashMap的key为什么一般用字符串比较多，能用其他对象，或者自定义的对象嘛？**
-	能用其他对象，必须是不可变的，但是自实现的类必须重写equals()和hashCode()方法，否则会调用默认的Object类的对应方法。
+​	能用其他对象，必须是不可变的，但是自实现的类必须重写equals()和hashCode()方法，否则会调用默认的Object类的对应方法。
 
 **4. HashMap的key和value都能为null嘛？如果key为null，那么它是怎么样查找值的？**
-	如果key为null，则直接从哈希表的第一个位置table[0]对应的链表上查找，由putForNullKey()实现，记住，key为null的键值对永远都放在以table[0]为头节点的链表中。
+​	如果key为null，则直接从哈希表的第一个位置table[0]对应的链表上查找，由putForNullKey()实现，记住，key为null的键值对永远都放在以table[0]为头节点的链表中。
 
 **5. 使用HashMap时一般使用什么类型的元素作为Key？**
-	一般是String、Integer，这些类是不可变的，并且这些类已经规范的复写了hashCode以及equals方法，作为不可变类天生是线程安全的，而且可以很好的优化比如可以缓存hash值，避免重复计算等等。
+​	一般是String、Integer，这些类是不可变的，并且这些类已经规范的复写了hashCode以及equals方法，作为不可变类天生是线程安全的，而且可以很好的优化比如可以缓存hash值，避免重复计算等等。
 
 **6. HashTable和HashMap的区别有哪些？**
-	都实现了Map接口，主要区别在于：线程安全性，同步以及性能。
+​	都实现了Map接口，主要区别在于：线程安全性，同步以及性能。
 
 - HashMap是非线程安全的，效率肯定高于线程安全的HashTable
 - HashMap允许null作为一个entry的key或者value，而HashTable不允许
@@ -1833,7 +1833,7 @@ public class CallableThreadTest implements Callable<Integer> {
 ### 4. run() 和 start() 方法的区别？
 
 	主要区别在于当程序调用start方法一个新线程将会被创建，并且在run方法中的代码将会在新线程上运行，然而在你直接调用run方法的时候，程序并不会创建新线程，run方法内部的代码将在当前线程上运行。
-
+	
 	另外一个区别在于，一旦一个线程被启动，你不能重复调用该Thread对象的start方法，调用已经启动线程的start方法将会报IIIegalStateException异常，而重复调用run方法是没有问题的。
 
 ### 5. 如何控制某个方法允许并发访问线程的个数？
@@ -1851,9 +1851,9 @@ semaphore.release();//释放一个信号
 ### 7. 谈谈 wait/notify 关键字的理解
 
 	都是本地final方法，调用之前持有对象锁。
-
+	
 	wait，线程进入挂起状态，释放对象锁。
-
+	
 	notify，通知唤醒wait队列中的线程（某个）
 
 ### 8. 什么导致线程阻塞？
@@ -1987,11 +1987,11 @@ semaphore.release();//释放一个信号
 ![](http://upload-images.jianshu.io/upload_images/3985563-23d90471fa7f12d2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 	横竖屏切换的生命周期：onPause() --> onSaveInstanceState() --> onStop() --> onDestory() --> onCreate() --> onStart() --> onRestoreInstanceState() --> onResume() 
-
+	
 	可以通过在AndroidManifest文件的Activity中指定如下属性：
-
+	
 	android:configChanges = "orientation| screenSize"
-
+	
 	来避免横竖屏切换时，Activity的销毁和重建，而是回调了下面的方法：
 
 ```java
@@ -2736,13 +2736,13 @@ Dalvik虚拟机与传统的Java虚拟机有着许多不同点，两者并不兼�
 
 ![](http://upload-images.jianshu.io/upload_images/3985563-cdba319dab32d0c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-1. Java编译器对工程本身的java代码进行编译，这些java代码有三个来源：App的源代码，由资源文件生成的R文件（aapt工具），以及有aidl文件生成的java接口文件（aidl工具），产出为.class文件。
-   * 用AAPT编译R.java文件
-   * 编译AIDL的java文件
-   * 把java文件编译成class文件
-2. class文件和依赖的第三方库文件通过dex工具生成Dalvik虚拟机可执行的.dex文件，包含了所有的class信息，包括项目自身的class和依赖的class，产出为.dex文件。
-3. apkbuilder工具将.dex文件和编译后的资源文件生成未经签名对齐的apk文件。这里编译后的资源文件包括两部分，一是由aapt编译产出的编译后的资源文件，二是依赖的第三方库里的资源文件，产出未经签名的.apk文件。
-4. 分别由Jarsugner和zipalign对apk文件进行签名和对齐，生成最终的apk文件。
+1. AAPT（Android Asset Packaging Tools）工具会打包应用中的资源文件，如AndroidManifest.xml、layout布局中的xml等，并将xml文件编译成二进制形式，当然assets文件夹中的文件不会被编译，图片以及raw文件夹中的资源也会保持原有的形态，需要注意的是raw文件夹中的资源也会生成资源ID。AAPT编译完成后会生成R.java文件。
+2. AIDL工会将所有的aidl接口转换为java接口。
+3. 所有的Java源代码、R文件、接口都会编译器编译成.class文件。
+4. Dex工具会将上述产生的.class文件以及第三方库和其他class文件转化为dex（Dalvik虚拟机可执行文件）文件，dex文件最终会被打包进APK文件。
+5. apkbuilder会把编译后的资源和其他资源文件同dex文件一起打入APK中。
+6. 生成APK文件之后，，需要对其签名才能安装到设备上，平时测试都会使用debug keystore，当发布应用时必须使用release版的keystore对应用进行签名。
+7. 如果对APK正式签名，还需要使用zipalign工具对APK进行对齐操作，这样做的好处是当应用运行时能提高速度，但是会相应的增加内存开销。
 
 **总结：编译 --> DEX --> 打包 --> 签名和对齐**
 
@@ -3226,9 +3226,9 @@ JSON在编码和解码上优于XML，并且数据体积更下，解析更快，�
 res/raw和assets的区别：
 
 	res/raw中的文件会被映射到R.java文件中，访问的时候直接使用资源ID即可，assets文件夹下的文件不会被映射到R文件中，访问的时候需要AssetManager类。
-
+	
 	res/raw不可以有目录结构，而assets则可以有目录结构，也就是assets目录下可以再建立文件夹。
-
+	
 	读取res/raw下的文件资源，通过以下方式获取输入流来进行写操作：
 
 ```java
@@ -3267,7 +3267,7 @@ InputStream is = getResources().openRawResource(R.id.filename);
 ### 17. 解决滑动冲突的方式？
 
 	在自定义View的过程中经常会遇到滑动冲突问题，一般滑动冲突的类型有三种：（1）外部View滑动方向和内部View滑动方向不一致；（2）外部View滑动方向和内部View滑动方向一致；（3）上述两种情况的嵌套
-
+	
 	一般解决滑动冲突都是利用事件分发机制，有两种方式即外部拦截法和内部拦截法：
 
 **外部拦截法：**
@@ -3700,7 +3700,30 @@ Application有两个子类，一个是MultiDexApplication，如果你遇到了65
 
 	我们知道，Android的时间分发机制中，只要有一个控件消费了事件，其他控件就没办法在接受到这个事件了。因此，当有嵌套滑动场景时，我们需要自己动手解决事件冲突。
 
-嵌套滑动机制的基本原理可以认为是事件共享，即当子控件接受到滑动事件，准备要滑动时，会先通知父控件（startNestedScroll）；然后在滑动之前，会先询问父控件是否要滑动（dispatchNestedPreScroll）；如果父控件响应该事件进行了滑动，那么就会通知子控件它具体消耗了多少滑动距离；然后交由子控件处理剩余的滑动距离；最后子控件滑动结束后，如果滑动距离还有剩余，就会在问一下父控件是否需要在继续滑动剩下的距离（dispatchNestedScroll）。
+嵌套滑动机制的基本原理可以认为是事件共享，即当子控件接受到滑动事件，准备要滑动时，会先通知父控件（startNestedScroll）；然后在滑动之前，会先询问父控件是否要滑动（dispatchNestedPreScroll）；如果父控件响应该事件进行了滑动，那么就会通知子控件它具体消耗了多少滑动距离；然后交由子控件处理剩余的滑动距离；最后子控件滑动结束后，如果滑动距离还有剩余，就会在问一下父控件是否需要在继续滑动剩下的距离（dispatchNestedScroll）
+
+###  29. RecyclerView 优化
+
+1. 尽量减少Item布局嵌套，比如使用ConstraintLayout
+
+2. 可以的话，写死ItemView的布局宽高，然后设置RecyclerView.setHasFixedSize(true)。当知道Adapter内Item的改变不会影响RecyclerView的宽高时，这样做可以避免重新计算大小。
+
+   但是，如果调用notifyDataSetChanged()，大小还是会重新计算（requestLayout）。当调用Adapter的增删改查方法，最后就会根据mHasFixedSize这个值来判断需不需要requestLayout()。
+
+3. 根据需求修改RecyclerView默认的绘制缓存选项
+
+   recyclerView.setItemViewCacheSize(20)
+
+   recyclerView.setDrawingCacheEnabled(true)
+
+   recyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)
+
+4. 在onBindViewHolder 或 getView 方法中，减少逻辑判断，减少临时对象创建。例如：复用事件监听，在其方法外部创建监听，可以避免生成大量的临时变量。
+
+5. 避免整个列表的数据更新，只更新受影响的布局。例如，加载更多时，不使用notifyDataSetChanged，而是使用notifyItemRangeInserted(rangeStart,rangeEnd)
+
+
+
 
 ## 数据结构
 
