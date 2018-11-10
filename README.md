@@ -81,6 +81,8 @@
 15. [线程间操作 List](https://github.com/Omooo/Android_QA/blob/master/Answer.md#java_thread_15)
 16. [Java 中对象的生命周期](https://github.com/Omooo/Android_QA/blob/master/Answer.md#java_thread_16)
 17. [说说线程池](https://github.com/Omooo/Android_QA/blob/master/Answer.md#java_thread_17)
+18. [并发编程面临的挑战有哪些？](https://github.com/Omooo/Android_QA/blob/master/Answer.md#java_thread_18)
+19. 
 
 
 
@@ -117,6 +119,15 @@
 29. [RecyclerView 优化](https://github.com/Omooo/Android_QA/blob/master/Answer.md#android_base_29)
 
 
+
+## Android 部分（二）高级知识点
+
+1. [Android 系统架构](https://github.com/Omooo/Android_QA/blob/master/Answer.md#android_advance_1)
+2. [Android 各个版本特性](https://github.com/Omooo/Android_QA/blob/master/Answer.md#android_advance_2)
+3. [Android 系统启动流程](https://github.com/Omooo/Android_QA/blob/master/Answer.md#android_advance_3)
+4. [应用程序进程启动过程](https://github.com/Omooo/Android_QA/blob/master/Answer.md#android_advance_4)
+5. [Activity 状态的保存与恢复](https://github.com/Omooo/Android_QA/blob/master/Answer.md#android_advance_5)
+6. 
 
 ## 数据结构
 
