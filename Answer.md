@@ -3825,6 +3825,62 @@ onRestoreInstanceState 调用时机：
 
 在 onStart() 方法之后，onResume() 之前。
 
+### 6. <span id="android_advance_6">Android 动画框架实现原理</span>
+
+### 7. <span id="android_advance_7">requestLayout、onLayout、onDraw、drawChild 区别与联系</span>
+
+### 8. <span id="android_advance_8">requestLayout、invalidate、postInvalidate 的区别</span>
+
+1. requestLayout 会回掉 onMeasure、onLayout、onDraw（ViewGroup.setWillNotDraw(fasle)情况下）方法
+2. invalidate 只会回掉 onDraw 方法
+3. postInvalidate 只会回掉 onDraw 方法（可以在非 UI 线程中调用）
+
+### 9. <span id="android_advance_9">Activity、Window、View 的区别以及联系</span>
+
+### 10. <span id="android_advance_10">Volley 的理解</span>
+
+### 11. <span id="android_advance_11">如何优化自定义 View</span>
+
+### 12. <span id="android_advance_12">低版本如何实现高版本 API</span>
+
+### 13. <span id="android_advance_13">描述一次网络请求的过程</span>
+
+### 14. <span id="android_advance_14">HttpUrlConnection 与 OkHttp 的关系</span>
+
+### 15. <span id="android_advance_15">Bitmap 的理解</span>
+
+### 16. <span id="android_advance_16">Looper 架构</span>
+
+### 17. <span id="android_advance_17">ActivityThread 的工作原理</span>
+
+### 18. <span id="android_advance_18">AMS 的工作原理</span>
+
+### 19. <span id="android_advance_19">WMS 的工作原理</span>
+
+### 20. <span id="android_advance_20">自定义 View 如何考虑机型适配</span>
+
+### 21. <span id="android_advance_21">自定义 View 的事件</span>
+
+### 22. <span id="android_advance_22">LaunchMode 应用场景</span>
+
+### 23. <span id="android_advance_23">SpareArray 原理</span>
+
+### 24. <span id="android_advance_24">ContentProvider 是如何实现数据共享的</span>
+
+### 25. <span id="android_advance_25">Service 与 Activity 的通信方式</span>
+
+### 26. <span id="android_advance_26">IntentService 原理与作用</span>
+
+### 27. <span id="android_advance_27">ApplicationContext 与 ActivityContext 的区别</span>
+
+### 28. <span id="android_advance_28">SP 是进程同步的嘛？如何做到进程同步？</span>
+
+### 29. <span id="android_advance_29">谈谈多线程在 Android 中的应用</span>
+
+### 30. <span id="android_advance_30">进程和 Application 的生命周期</span>
+
+
+
 
 ## 数据结构
 
