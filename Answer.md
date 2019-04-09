@@ -548,6 +548,29 @@ public static int parseInt(String s, int radix)  throws NumberFormatException
 * 覆盖
 * 向上转型
 
+### 25. <span id="java_base_25">对象拷贝理解？深拷贝、浅拷贝的区别？</span>
+
+首先要先明白为什么需要使用克隆呢？
+
+克隆的对象可能包含一些已经修改过的属性，而 new 出来的对象的属性都还是初始化时候的值，所以当需要一个新的对象来保存当前对象的 "状态" 就需要克隆了。
+
+那如何实现对象克隆呢？有两种办法：
+
+1. 实现 Cloneable 接口并重写 Object 类中的 clone() 方法
+2. 实现 Serialiable 接口，通过对象的序列化和反序列化实现克隆，可以实现真正的深度克隆
+
+深拷贝和浅拷贝的区别是什么？
+
+- 浅拷贝
+
+  当对象被复制的时候只复制它本身和其中包含的值类型的成员变量，而引用类型的成员变量并没有复制。
+
+- 深拷贝
+
+  除了对象本身被复制外，对象所包含的所有成员变量也将被复制。
+
+Java 默认的是浅拷贝，如果想实现深拷贝，就需要对象所包含的引用类型的成员变量也需要实现 Cloneable 接口，或者实现 Serialiable 接口。
+
 ## Java 部分（二）高级知识点
 
 ### 1.  <span id="java_advance_1">哪些情况下的对象会被垃圾回收机制处理掉？</span>
@@ -2525,7 +2548,7 @@ content://com.example.app.provider/table/#
 
   text/css    text/xml 等等
 
-  ​
+  
 
 ### 3. <span id="android_base_3">Context的理解？</span>
 

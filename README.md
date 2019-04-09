@@ -26,6 +26,8 @@
 22. [闭包和局部内部类的区别](https://github.com/Omooo/Android_QA/blob/master/Answer.md#java_base_22)
 23. [String转换成Integer的方式以及原理](https://github.com/Omooo/Android_QA/blob/master/Answer.md#java_base_23)
 24. [面向对象思想](https://github.com/Omooo/Android_QA/blob/master/Answer.md#java_base_24)
+25. [对象拷贝的理解？深拷贝、浅拷贝的区别？](https://github.com/Omooo/Android_QA/blob/master/Answer.md#java_base_25)
+26. 
 
 
 
