@@ -571,6 +571,52 @@ public static int parseInt(String s, int radix)  throws NumberFormatException
 
 Java 默认的是浅拷贝，如果想实现深拷贝，就需要对象所包含的引用类型的成员变量也需要实现 Cloneable 接口，或者实现 Serialiable 接口。
 
+### 26. <span id="java_base_26">Enumeration 和 Iterator 的区别？</span>
+
+- 接口不同
+
+  Enumeration 只能读取集合数据，而不能对数据进行修改；Iterator 除了读取集合的数据之外，也能对数据进行删除操作；Enumeration 已经被 Iterator 取代了，之所以没有被标记为 Deprecated，是因为在一些遗留类（Vector、Hashtable）中还在使用。
+
+  ```java
+  public interface Enumeration<E> {
+      boolean hasMoreElements();
+      E nextElement();
+      default Iterator<E> asIterator() {
+          return new Iterator<>() {
+              @Override public boolean hasNext() {
+                  return hasMoreElements();
+              }
+              @Override public E next() {
+                  return nextElement();
+              }
+          };
+      }
+  }
+  ```
+
+  ```java
+  public interface Iterator<E> {
+      boolean hasNext();
+      E next();
+      default void remove() {
+          throw new UnsupportedOperationException("remove");
+      }
+      default void forEachRemaining(Consumer<? super E> action) {
+          Objects.requireNonNull(action);
+          while (hasNext())
+              action.accept(next());
+      }
+  }
+  ```
+
+- Iterator 支持 fail-fast 机制，而 Enumeration 不支持
+
+  Enumeration 是 JDK 1.0 添加的接口。使用到它的函数包括 Vector、Hashtable 等类，Enumeration 存在的目的就是为它们提供遍历接口。
+
+  Iterator 是 JDK 1.2 才添加的接口，它是为了 HashMap、ArrayList 等集合提供的遍历接口。Iterator 是支持 fail-fast 机制的。
+
+  Fail-fast 机制是指 Java 集合 (Collection) 中的一种错误机制。当多个线程对同一个集合的内容进行操作时，就可能会产生 fail-fast 事件。例如：当某个线程 A 通过 Iterator 去遍历某集合的过程中，若该集合的内容被其他线程所改变了，那么线程 A 访问集合时，就会抛出 ConcurrentModificationException 异常，产生 fail-fast 事件。
+
 ## Java 部分（二）高级知识点
 
 ### 1.  <span id="java_advance_1">哪些情况下的对象会被垃圾回收机制处理掉？</span>
