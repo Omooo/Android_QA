@@ -12,7 +12,7 @@ https://www.nowcoder.com/discuss?type=2&order=0&pageSize=30&expTag=4&page=4
 2. Handler
 3. View 绘制流程
 4. adb
-5. RecyclerView 源码
+5. RecyclerView 源码，对比 ListView 有哪些改进？
 6. 主线程为什么不会因为 Looper 而阻塞？
 7. 事件分发机制、滑动冲突处理
 8. 自定义 View，实现下拉刷新控件？
@@ -30,6 +30,10 @@ https://www.nowcoder.com/discuss?type=2&order=0&pageSize=30&expTag=4&page=4
 20. 插件化框架
 21. Android 源码中的设计模式
 22. 一个 Android 正常启动有多少个线程？
+23. ART 和 DVK 在 GC 上有啥不同?有啥改进?
+24. Activity 启动流程？
+25. 多渠道打包
+26. 跨进程通信
 
 #### 操作系统
 
@@ -54,6 +58,13 @@ https://www.nowcoder.com/discuss?type=2&order=0&pageSize=30&expTag=4&page=4
 15. 找到一个无序数组中第一次出现最多次数最多的元素
 16. 快排思想、时间复杂度，什么场景对应着最坏的情况
 17. 给定无序数组和一个值，找到两个数和为值得元素，不能使用额外的空间复杂度
+18. k 个有序链表合并
+19. 一个文件有一亿个字符串，统计频率最高的十个
+20. 红黑树和平衡二叉树区别？查找复杂度?哪个插入效率高?
+21. 给出两个链表的头指针比如p1,p2,判断这两个链表是否相交
+22. 二维数组,每一行,每一列都是升序,找出某数的下标,没有输出[-1,-1],最好的时间复杂度是m+n(行数+列数)
+23. 俩线程分别持续打印奇数和偶数，实现俩线程的交替打印（从小到大）
+24. 1~10000中7出现的次数，如17算1个，77算2个
 
 #### 计算机网路
 
@@ -62,6 +73,7 @@ https://www.nowcoder.com/discuss?type=2&order=0&pageSize=30&expTag=4&page=4
 3. TCP / IP 四层模型，网络层和传输层有什么区别？网络层的主要工作是什么？
 4. Socket.accept() 函数对应着 TCP 三次握手中哪一次握手，哪个函数代表连接建立完毕，四次挥手的过程？
 5. HTTPS 实现思路
+6. OSI 模型
 
 #### Java
 
@@ -70,9 +82,14 @@ https://www.nowcoder.com/discuss?type=2&order=0&pageSize=30&expTag=4&page=4
 3. 四种引用
 4. Object 的方法有哪些？
 5. hash 算法的原理，HashMap 源码
-6. 
+6. 用四个线程计算数组和
+7. 
 
 #### JVM
 
 1. GC 回收
 2. 双亲委派机制
+3. 形成死锁的四个条件
+
+#### 设计模式
+
