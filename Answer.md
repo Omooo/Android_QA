@@ -42,6 +42,8 @@ public boolean equals(Object anObject) {
 }
 ```
 
+在 Object#equals 方法注释上，也给出了重写 equals 函数要遵守的规则：自反性、对称性、传递性和一致性，并且给出了具体示例。注释中还给出了，重写 equals 方法时也要重写 hashCode 方法，从而维持 hashCode 的语义，即如果对象相等，那么他们的哈希值必须相同。
+
 hashCode()方法返回的就是一个数值，从方法名上来看，其目的就是生成一个hash码，hash码的主要用途就是在**对对象进行散列的时候作为key输入**。
 
 参考自：[http://blog.csdn.net/hla199106/article/details/46907725](http://blog.csdn.net/hla199106/article/details/46907725)
@@ -2502,19 +2504,19 @@ sendBroadcast(intent);
   //步骤1：实例化BroadcastReceiver子类 & IntentFilter mBroadcastReceiver 
   mBroadcastReceiver = new mBroadcastReceiver(); 
   IntentFilter intentFilter = new IntentFilter(); 
-
+  
   //步骤2：实例化LocalBroadcastManager的实例
   localBroadcastManager = LocalBroadcastManager.getInstance(this);
-
+  
   //步骤3：设置接收广播的类型 
   intentFilter.addAction(android.net.conn.CONNECTIVITY_CHANGE);
-
+  
   //步骤4：调用LocalBroadcastManager单一实例的registerReceiver（）方法进行动态注册 
   localBroadcastManager.registerReceiver(mBroadcastReceiver, intentFilter);
-
+  
   //取消注册应用内广播接收器
   localBroadcastManager.unregisterReceiver(mBroadcastReceiver);
-
+  
   //发送应用内广播
   Intent intent = new Intent();
   intent.setAction(BROADCAST_ACTION);
