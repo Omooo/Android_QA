@@ -1,27 +1,5 @@
 # Android_QA
 
-2020 年 10 月 27 重磅更新：
-
-最真实的 Android 面经，最详细的面试回答，我都给你准备好啦！
-
-几大公司面试问题：[https://juejin.im/post/6878902981400625160](https://juejin.im/post/6878902981400625160) 里面都备注了**回答要点**！
-
-最重要的，遇到这些面试题**该如何回答**我都给你写好了，我愿称之为最强口水话。
-
-✨✨✨ Android 面试必备 --- 口水话系列 ✨✨✨
-
-> 何为口水话呢？
->
-> 就是面试官问你相关问题的时候，你应该如何说的话。
->
-> 有没有遇到这样的场景，明明面试官问我的问题我会，我也看过甚至我自己也写过相关博客，但是在回答的时候还是支支吾吾说不清楚，或者不分轻重想到啥就说啥。
->
-> 口水话专门用来解决这个问题，它不同于一般博客语言琐碎，而是语言精炼，突出重点，以沟通的方式而非说教的形式去阐述问题。
-
-详细见：[https://github.com/Omooo/Android-Notes](https://github.com/Omooo/Android-Notes)
-
-**这一次，轻松拿下 Android 面试！**
-
 ## Java 部分（一）基础知识点
 
 1. [Java中 == 和 equals 和 hashCode 的区别](https://github.com/Omooo/Android_QA/blob/master/Answer.md#java_base_1)
